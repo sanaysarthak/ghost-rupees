@@ -1,0 +1,72 @@
+[
+  {
+    "client_id": "cli_arjuntex",
+    "name": "Arjun Textiles Pvt Ltd",
+    "pan_on_file": true,
+    "tan": "DELA12345B",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_northwin",
+    "name": "Northwind Studios LLP",
+    "pan_on_file": true,
+    "tan": "MUMB98765C",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_bluepeak",
+    "name": "BluePeak Consulting",
+    "pan_on_file": true,
+    "tan": "BLRB45678D",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_fernhill",
+    "name": "Fernhill Media",
+    "pan_on_file": true,
+    "tan": "CHEA23456E",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_kestrela",
+    "name": "Kestrel Analytics",
+    "pan_on_file": true,
+    "tan": "PUNE34567F",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_solacede",
+    "name": "Solace Design Co",
+    "pan_on_file": true,
+    "tan": "HYDA56789G",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_ironleaf",
+    "name": "Ironleaf Ventures",
+    "pan_on_file": true,
+    "tan": "KOLA67890H",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_marrowin",
+    "name": "Marrow Interactive",
+    "pan_on_file": true,
+    "tan": "DELB78901I",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_tidewate",
+    "name": "Tidewater Labs",
+    "pan_on_file": true,
+    "tan": "MUMC89012J",
+    "contracted_commission_bps": null
+  },
+  {
+    "client_id": "cli_copperli",
+    "name": "Copperline Retail",
+    "pan_on_file": true,
+    "tan": "BLRC90123K",
+    "contracted_commission_bps": null
+  }
+]

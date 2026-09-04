@@ -1,0 +1,472 @@
+[
+  {
+    "credit_id": "CR-0001",
+    "value_date": "2026-05-29",
+    "amount_paisa": 2360000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/86846326096/NORTHWINDSTUDIOSLLP/KKBK/",
+    "utr": "86846326096",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0002",
+    "value_date": "2026-05-10",
+    "amount_paisa": 1296000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/UTIB/68175080694/IRONLEAFVENTURES",
+    "utr": "68175080694",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0003",
+    "value_date": "2026-09-09",
+    "amount_paisa": 1500000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-36437583152-COPPERLINERETAIL-HDFC",
+    "utr": "36437583152",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0004",
+    "value_date": "2026-10-27",
+    "amount_paisa": 2450000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 73263716304 NORTHWINDSTUDIOSLLP",
+    "utr": "73263716304",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0005",
+    "value_date": "2026-09-15",
+    "amount_paisa": 120000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/SBIN/97846728339/FRIEND",
+    "utr": "97846728339",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-clean-INV-006",
+    "value_date": "2026-09-15",
+    "amount_paisa": 1800000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-37295679827-FERNHILLMEDIA-HDFC",
+    "utr": "37295679827",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0006",
+    "value_date": "2026-08-15",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-42456852025-COPPERLINERETAIL-HDFC",
+    "utr": "42456852025",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0007",
+    "value_date": "2026-05-26",
+    "amount_paisa": 3776000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 37121334999 FERNHILLMEDIA",
+    "utr": "37121334999",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0008",
+    "value_date": "2026-05-26",
+    "amount_paisa": 3776000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 37121334999 FERNHILLMEDIA",
+    "utr": "37121334999",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0009",
+    "value_date": "2026-07-05",
+    "amount_paisa": 7080000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/ICIC/58960052375/KESTRELANALYTICS",
+    "utr": "58960052375",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0010",
+    "value_date": "2027-01-03",
+    "amount_paisa": 800000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-TIDEWATERLABS-68757219412",
+    "utr": "68757219412",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0011",
+    "value_date": "2026-12-07",
+    "amount_paisa": 4860000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-IRONLEAFVENTURES-25980378553",
+    "utr": "25980378553",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0012",
+    "value_date": "2026-07-01",
+    "amount_paisa": 3712000,
+    "rail": "NEFT",
+    "raw_narration": "NEFT/KKBK/82893704331/SOLACEDESIGNCO",
+    "utr": "82893704331",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0013",
+    "value_date": "2026-10-20",
+    "amount_paisa": 5950000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-NORTHWINDSTUDIOSLLP-34749795425",
+    "utr": "34749795425",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0014",
+    "value_date": "2026-05-28",
+    "amount_paisa": 300000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/SBIN/77258117644/FRIEND",
+    "utr": "77258117644",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-clean-INV-015",
+    "value_date": "2026-05-28",
+    "amount_paisa": 4500000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/KKBK/68439875878/COPPERLINERETAIL",
+    "utr": "68439875878",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0015",
+    "value_date": "2026-10-08",
+    "amount_paisa": 2950000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/41129517597/FERNHILLMEDIA/SBIN/",
+    "utr": "41129517597",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0016",
+    "value_date": "2027-03-14",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/98939499630/ARJUNTEXTILESPVTLTD/ICIC/",
+    "utr": "98939499630",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0017",
+    "value_date": "2027-03-14",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/98939499630/ARJUNTEXTILESPVTLTD/HDFC/dup",
+    "utr": "98939499630",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0018",
+    "value_date": "2026-06-24",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-SOLACEDESIGNCO-29495861299",
+    "utr": "29495861299",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0019",
+    "value_date": "2026-09-12",
+    "amount_paisa": 3776000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 59095990995 MARROWINTERACTIVE",
+    "utr": "59095990995",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0020",
+    "value_date": "2026-06-13",
+    "amount_paisa": 1392000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/KKBK/36837774596/MARROWINTERACTIVE",
+    "utr": "36837774596",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0021",
+    "value_date": "2026-07-12",
+    "amount_paisa": 1740000,
+    "rail": "NEFT",
+    "raw_narration": "UPI/CR/25248531107/MARROWINTERACTIVE/KKBK/",
+    "utr": "25248531107",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0022",
+    "value_date": "2026-06-05",
+    "amount_paisa": 1720000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/UTIB/65253252721/ARJUNTEXTILESPVTLTD",
+    "utr": "65253252721",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0023",
+    "value_date": "2026-06-14",
+    "amount_paisa": 120000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-FRIEND-87524771010",
+    "utr": "87524771010",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-clean-INV-024",
+    "value_date": "2026-06-14",
+    "amount_paisa": 6960000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-FERNHILLMEDIA-14971135717",
+    "utr": "14971135717",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0024",
+    "value_date": "2026-06-26",
+    "amount_paisa": 1200000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/KKBK/91133166233/BLUEPEAKCONSULTING",
+    "utr": "91133166233",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0025",
+    "value_date": "2026-06-09",
+    "amount_paisa": 1416000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/SBIN/56025693325/COPPERLINERETAIL",
+    "utr": "56025693325",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0026",
+    "value_date": "2026-06-09",
+    "amount_paisa": 1416000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 56025693325 COPPERLINERETAIL",
+    "utr": "56025693325",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0027",
+    "value_date": "2026-12-22",
+    "amount_paisa": 1416000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-KESTRELANALYTICS-38078925963",
+    "utr": "38078925963",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0028",
+    "value_date": "2026-10-18",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-86595351346-BLUEPEAKCONSULTING-KKBK",
+    "utr": "86595351346",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0029",
+    "value_date": "2026-05-22",
+    "amount_paisa": 6480000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/24020774383/TIDEWATERLABS/KKBK/",
+    "utr": "24020774383",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0030",
+    "value_date": "2026-09-20",
+    "amount_paisa": 8850000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-98852123602-BLUEPEAKCONSULTING-KKBK",
+    "utr": "98852123602",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0031",
+    "value_date": "2026-08-22",
+    "amount_paisa": 1100000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-52964901582-MARROWINTERACTIVE-ICIC",
+    "utr": "52964901582",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0032",
+    "value_date": "2026-11-21",
+    "amount_paisa": 50000,
+    "rail": "UPI",
+    "raw_narration": "IMPS-58568599783-FRIEND-ICIC",
+    "utr": "58568599783",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-clean-INV-033",
+    "value_date": "2026-11-21",
+    "amount_paisa": 6480000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/42994225206/ARJUNTEXTILESPVTLTD/SBIN/",
+    "utr": "42994225206",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0033",
+    "value_date": "2026-12-12",
+    "amount_paisa": 1500000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 34957074522 TIDEWATERLABS",
+    "utr": "34957074522",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0034",
+    "value_date": "2026-10-24",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 18040895120 BLUEPEAKCONSULTING",
+    "utr": "18040895120",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0035",
+    "value_date": "2026-10-24",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/UTIB/18040895120/BLUEPEAKCONSULTING",
+    "utr": "18040895120",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0036",
+    "value_date": "2026-09-25",
+    "amount_paisa": 2124000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/45769612716/SOLACEDESIGNCO/SBIN/",
+    "utr": "45769612716",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0037",
+    "value_date": "2027-01-17",
+    "amount_paisa": 6480000,
+    "rail": "UPI",
+    "raw_narration": "BY TRANSFER-SOLACEDESIGNCO-32596747212",
+    "utr": "32596747212",
+    "razorpay_payment_id": "pay_32596747212",
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0038",
+    "value_date": "2026-07-16",
+    "amount_paisa": 3712000,
+    "rail": "UPI",
+    "raw_narration": "RTGS INW 25081447213 ARJUNTEXTILESPVTLTD",
+    "utr": "25081447213",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0039",
+    "value_date": "2026-08-29",
+    "amount_paisa": 3712000,
+    "rail": "NEFT",
+    "raw_narration": "IMPS-20442342819-FERNHILLMEDIA-KKBK",
+    "utr": "20442342819",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-0040",
+    "value_date": "2026-07-23",
+    "amount_paisa": 2260000,
+    "rail": "UPI",
+    "raw_narration": "NEFT/UTIB/84284273440/SOLACEDESIGNCO",
+    "utr": "84284273440",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-GHOST-01",
+    "value_date": "2026-06-22",
+    "amount_paisa": 2160000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/452118839021/ARJUNTEXTILES/HDFC/inv-ghost-01",
+    "utr": "452118839021",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-SPLIT-01A",
+    "value_date": "2026-07-18",
+    "amount_paisa": 2500000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/998877/NORTHWINDSTUDIOSLLP/ICIC/part1",
+    "utr": "998877",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-SPLIT-01B",
+    "value_date": "2026-07-20",
+    "amount_paisa": 1500000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/998878/NORTHWINDSTUDIOSLLP/ICIC/part2",
+    "utr": "998878",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  }
+]
