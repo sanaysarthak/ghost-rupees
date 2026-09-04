@@ -45,6 +45,54 @@ def test_worked_example_hypotheses():
     assert hyps["gst_omitted_with_correct_tds"].predicted_net_paisa == rupees_to_paisa("18000.00")
 
 
+def test_lawful_correct_is_marked_lawful_when_fy_threshold_already_crossed():
+    """
+    The 194J threshold (Rs 50,000) applies cumulatively per payee per FY,
+    not per invoice - see core.compose's docstring on
+    prior_base_paisa_this_fy. This invoice's own base (Rs 20,000) is below
+    the threshold on its own; it only becomes a lawful deduction once
+    combined with what this payee already invoiced the same client earlier
+    in the FY. Rs 40,000 prior + Rs 20,000 this invoice = Rs 60,000, over
+    the Rs 50,000 threshold.
+    """
+    inv = _invoice()
+    client = _client()
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(
+        inv, ruleset, client, prior_base_paisa_this_fy=rupees_to_paisa("40000.00"),
+    )}
+    assert hyps["lawful_correct"].lawful is True
+    assert hyps["rate_on_gst_inclusive"].lawful is False
+    assert hyps["gst_omitted_with_correct_tds"].lawful is False
+
+
+def test_lawful_correct_is_unlawful_when_threshold_not_yet_crossed():
+    """Same invoice, but as this payee's first invoice this FY (no prior
+    cumulative amount) - Rs 20,000 alone is below the Rs 50,000 threshold,
+    so a deduction here would NOT be lawful."""
+    inv = _invoice()
+    client = _client()
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+    assert hyps["lawful_correct"].lawful is False
+    assert hyps["lawful_correct"].exception_if_matched is not None
+
+
+def test_below_threshold_flagged():
+    inv = Invoice(
+        invoice_id="INV-SMALL", client_id="cli_test",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("10000.00"), gst_applicable=False,
+        deduction_kind=DeductionKind.TDS_PROFESSIONAL_194J,
+    )
+    client = _client()
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+    # below the Rs 50,000 threshold - a deduction here would be unlawful
+    assert hyps["lawful_correct"].lawful is False
+    assert hyps["lawful_correct"].exception_if_matched is not None
+
+
 def test_rate_mismatch_hypothesis_present_for_194j_family():
     inv = _invoice()
     client = _client()

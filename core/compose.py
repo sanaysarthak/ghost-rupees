@@ -41,7 +41,18 @@ def gross_amount(invoice: Invoice) -> Paisa:
     return invoice.service_amount_paisa
 
 
-def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client) -> list[Hypothesis]:
+def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client,
+                            prior_base_paisa_this_fy: Paisa = Paisa(0)) -> list[Hypothesis]:
+    """
+    prior_base_paisa_this_fy: sum of service_amount_paisa for this client's
+    OTHER invoices, earlier in the same financial year. TDS thresholds
+    (e.g. 194J's Rs 50,000) apply cumulatively per payee per FY, not per
+    invoice - a payer who has already crossed the threshold earlier in
+    the year is required to deduct on this invoice even if this
+    invoice's own amount is small. Callers (core.match) are responsible
+    for computing this from the batch; it defaults to 0, which means
+    "treat this as the payee's first invoice this FY" if omitted.
+    """
     base = invoice.service_amount_paisa
     gross = gross_amount(invoice)
     kind = invoice.deduction_kind
@@ -65,7 +76,8 @@ def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client) -
     if rule is None:
         return hyps
 
-    over_threshold = base >= rule.threshold_paisa
+    cumulative_base = Paisa(int(prior_base_paisa_this_fy) + int(base))
+    over_threshold = cumulative_base >= rule.threshold_paisa
 
     # H1 - the correct, lawful deduction: rate applied to base, excl. GST
     ded_correct = apply_bps(base, rule.rate_bps)
@@ -80,7 +92,8 @@ def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client) -
         explanation=(
             f"{kind.value} at {rule.rate_bps/100:.2f}% on the base amount "
             f"(excl. GST), citing {rule.legacy_citation}."
-            + ("" if over_threshold else " NOTE: below the FY threshold - deduction should not have applied.")
+            + ("" if over_threshold else " NOTE: cumulative FY payments to this payee are below the "
+                                          "threshold - deduction should not have applied.")
         ),
     ))
 
