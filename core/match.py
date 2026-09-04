@@ -148,6 +148,53 @@ def _stage3_hypothesis(
     return next((c, h) for c, h in matches if c.credit_id == chosen_credit_id)
 
 
+SHORT_PAY_MIN_FRACTION = 0.5   # a candidate short-pay credit must be at least
+                                # this fraction of gross, or it's more likely
+                                # an unrelated small credit than a short-pay
+
+
+def _stage3b_short_pay(invoice: Invoice, hyps: list[Hypothesis],
+                        pool: list[Credit]) -> Credit | None:
+    """
+    Not every gap has a lawful explanation. A client can simply pay less
+    than invoiced with no deduction basis at all. Stage 3 (exact
+    hypothesis match) already failed by the time this runs, so any
+    candidate here is, by construction, an amount that matches NO lawful
+    or common-error hypothesis - the defining feature of a short payment.
+    """
+    gross = int(gross_amount(invoice))
+    floor = int(gross * SHORT_PAY_MIN_FRACTION)
+    candidates = [
+        c for c in pool
+        if _within_window(invoice, c.value_date) and floor <= int(c.amount_paisa) < gross
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
+def _book_short_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
+    gross = gross_amount(inv)
+    received = credit.amount_paisa
+    shortfall = Paisa(int(gross) - int(received))
+    proof = Proof(
+        stage="stage3b_short_pay", rule_fired="short_paid", invoice_id=inv.invoice_id,
+        credit_id=credit.credit_id,
+        fields_compared={"gross_paisa": int(gross), "received_paisa": int(received)},
+        residual_paisa=Paisa(0),
+    )
+    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.RECEIVED, amount_paisa=received,
+                           note="Partial payment, no lawful deduction basis found.", proof=proof))
+    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.SHORT, amount_paisa=shortfall,
+                           note="Shortfall with no lawful basis.", proof=proof))
+    ledger.add_invoice_exception(Exception_.make(
+        ExceptionCode.SHORT_PAID,
+        invoice_id=inv.invoice_id, credit_id=credit.credit_id, amount_paisa=shortfall,
+        explanation=f"Invoice {inv.invoice_id}: Rs {shortfall/100:.2f} short, with no matching "
+                    f"lawful deduction hypothesis for the gap.",
+    ))
+
+
 def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
                    pool: list[Credit]) -> tuple[list[Credit], Hypothesis] | None:
     """One invoice settled across up to MAX_SET_SIZE credits."""
@@ -259,6 +306,12 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
         if credit is not None and hyp is not None:
             consumed.add(credit.credit_id)
             _book_matched_invoice(ledger, batch, inv, hyp, credit, stage)
+            continue
+
+        short_credit = _stage3b_short_pay(inv, hyps, [c for c in pool if c.credit_id not in consumed])
+        if short_credit is not None:
+            consumed.add(short_credit.credit_id)
+            _book_short_paid(ledger, inv, short_credit)
         else:
             unresolved.append(inv)
 

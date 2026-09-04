@@ -116,6 +116,28 @@ def test_narration_hint_resolves_the_cross_client_tie_correctly():
     assert line_b.proof.credit_id == "CR-TIE-B"
 
 
+def test_short_paid_is_recognised_not_swallowed_as_unmatched():
+    """
+    A partial payment with no lawful deduction basis must be recognised
+    as SHORT_PAID (RECEIVED = what arrived, SHORT = the shortfall), not
+    silently lumped into UNMATCHED_INVOICE (which would put the ENTIRE
+    gross into SHORT and lose the fact that most of the money did
+    arrive). SHORT_PAID existed in the taxonomy the whole time but
+    nothing was ever assigning it - see DECISIONS.md.
+    """
+    batch = generate_batch(seed=42, n_random=40)
+    ledger = run_matcher(batch)
+    ledger.assert_conserves(batch.invoices, gross_amount)
+    short_paid = [e for e in ledger.invoice_exceptions if e.code == ExceptionCode.SHORT_PAID]
+    assert len(short_paid) >= 1
+    for e in short_paid:
+        received_lines = [
+            l for l in ledger.lines
+            if l.invoice_id == e.invoice_id and l.bucket.value == "RECEIVED"
+        ]
+        assert received_lines and int(received_lines[0].amount_paisa) > 0
+
+
 def test_conservation_actually_catches_a_broken_engine():
     """Negative control: prove assert_conserves is not a tautology by
     feeding it a deliberately unbalanced ledger."""
