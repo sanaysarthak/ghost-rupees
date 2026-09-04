@@ -274,3 +274,63 @@ The 12-defect holdout eval, once all of the above landed, found 11/12
 defects correctly classified, with the 12th (`FX_SPREAD_UNEXPLAINED`)
 an honestly documented known gap - see `eval/defects.py` output and
 `data/holdout.py`'s `PlantedDefect.known_gap` field.
+
+## Entry 8 — 2026-09-05 — the other two missing exception codes: OVER_PAID and GATEWAY_FEE_VARIANCE
+
+A post-submission audit (re-checking, for every one of the 15
+`ExceptionCode` members, "where does this actually get assigned?" - the
+same method that caught `SHORT_PAID` in Entry 6) turned up two more:
+`OVER_PAID` and `GATEWAY_FEE_VARIANCE` were both defined with action
+strings in `core/classify.py` and never assigned anywhere in
+`core/match.py`. Unlike `FX_SPREAD_UNEXPLAINED` (an honestly documented
+known gap - no FX hypothesis exists at all), these two had no excuse:
+the machinery to support them was already sitting right next to them.
+
+**`GATEWAY_FEE_VARIANCE`** turned out to be a copy of the
+`PLATFORM_COMMISSION` fix from Entry 7 - `DeductionKind.GATEWAY_FEE`
+had an enum value and nothing else. Added a `Client.contracted_mdr_bps`
+field (Razorpay's MDR is set by the merchant's own rate card, not a
+statutory table, same as platform commission) and a `GATEWAY_FEE`
+branch in `core/compose.py` that models the lawful fee AND its GST
+component together - `plan/baaki.md` §7 is explicit that Razorpay's MDR
+carries "18% GST on the fee itself," so the deduction is
+`mdr + 18% of mdr`, not just `mdr`. A charge above the contracted rate
+card raises `GATEWAY_FEE_VARIANCE`. `core/match.py`'s existing
+`is_statutory_tds` guard (from Entry 7) already routes non-TDS
+deductions away from the Form 26AS check, so no match.py change was
+needed there - only the new hypothesis branch and the exception
+mechanism already wired to `hyp.exception_if_matched`.
+
+**`OVER_PAID`** needed genuinely new matcher logic, not a copy of an
+existing pattern - it's the mirror image of Entry 6's `SHORT_PAID`
+stage, for a credit that's LARGER than any hypothesis predicts rather
+than smaller. Added `core.match._stage3c_over_paid`, run last (after
+split/merge and short-pay have had their chance, for the same reason
+short-pay is ordered last: a genuine multi-part settlement must never
+get mistaken for a simple over/under-payment on one of its parts).
+Scoped to a single narration-confirmed candidate within
+`OVER_PAY_MAX_FRACTION` (1.5x) of gross - the same "don't guess without
+evidence" discipline as everywhere else in this matcher. The booking
+function, `_book_over_paid`, keeps the invoice's own ledger bucket
+accounting exact (`RECEIVED = gross`, nothing else) and records the
+excess as an exception tied to both the invoice and the credit, rather
+than inventing a fifth bucket - the excess isn't part of what was
+invoiced, so it doesn't belong in the per-invoice conservation
+identity.
+
+Extended `data/holdout.py` with two new planted defects (13:
+`OVER_PAID`, 14: `GATEWAY_FEE_VARIANCE`) rather than the golden batch,
+following the precedent Entry 7 already set for `PLATFORM_COMMISSION`
+and `MERGED_PAYMENT` - these are rare, deliberately-triggered cases
+better demonstrated as named, checkable ground truth than folded into
+the random batch's anomaly cycle. Both were caught correctly on first
+run, with zero false positives elsewhere in the batch. The 14-defect
+eval now finds 13/14, with `FX_SPREAD_UNEXPLAINED` the sole remaining
+honest gap.
+
+No change to the golden batch's own numbers (auto-match rate, rupees
+at risk) - neither `PLATFORM_COMMISSION` nor `GATEWAY_FEE` nor
+`OVER_PAID` are exercised by the random generator, only by the holdout
+batch, so this was a pure coverage fix with zero risk to the numbers
+already reported in the README and, by extension, in the demo video
+script.

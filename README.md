@@ -19,9 +19,9 @@ sitting in TDS deductions that were never deposited with the
 government, rate mismatches that were never corrected, and short
 payments with no lawful basis — money a freelancer or small business
 would otherwise simply never notice was missing. Separately, on a
-12-defect held-out eval batch with known ground truth
-(`python eval/defects.py`), it correctly classified **11 of 12**
-planted defects, with the 12th an honestly documented known gap (FX
+14-defect held-out eval batch with known ground truth
+(`python eval/defects.py`), it correctly classified **13 of 14**
+planted defects, with the 14th an honestly documented known gap (FX
 spread handling isn't built yet) rather than a silent miss.
 
 The auto-match rate is deliberately not the highest number this engine
@@ -47,9 +47,9 @@ anything at all; it's committed at that path already.
 
 ```
 python cli.py generate      # regenerate the synthetic batch from scratch (seeded, deterministic)
-python -m pytest -q         # 45 tests, ~0.5s, no network
+python -m pytest -q         # 47 tests, ~0.5s, no network
 python eval/ablation.py     # the narration-parser ablation (stub only by default; --live needs ANTHROPIC_API_KEY)
-python eval/defects.py      # the 12-planted-defect held-out eval, with known ground truth
+python eval/defects.py      # the 14-planted-defect held-out eval, with known ground truth
 ```
 
 ## What it does
@@ -75,7 +75,7 @@ that number.
 | Auto-match rate | 75.76% |
 | Rupees accounted for | 100.00% (by construction — see `core/ledger.py`) |
 | Rupees at risk (TDS not in 26AS + rate mismatches + short-paid) | Rs 36,575.82 |
-| 12-defect held-out eval | 11/12 correctly classified, 0 false positives, 1 documented known gap |
+| 14-defect held-out eval | 13/14 correctly classified, 0 false positives, 1 documented known gap |
 
 Invoice exceptions by code: `UNMATCHED_INVOICE` ×10 · `TDS_NOT_IN_26AS`
 ×8 · `SHORT_PAID` ×6 · `TDS_RATE_MISMATCH` ×3 · `GST_OMITTED` ×3 ·
@@ -117,13 +117,13 @@ ghost-rupees/
 │   ├── rules/         FY-versioned TDS/GST rate tables, cited, cumulative-threshold aware
 │   ├── compose.py     the hypothesis solver - predicts net under each lawful/common-error deduction
 │   ├── match.py       the matcher: identity, UTR, hypothesis (3-tier tie-break), split/merge, short-pay, classify
-│   ├── classify.py    14-code typed exception taxonomy
+│   ├── classify.py    15-code typed exception taxonomy
 │   ├── proof.py       an audit record on every matched decision
 │   └── ledger.py      the conservation law: 4 buckets, asserted to sum to gross, always
 ├── llm/           optional - narration parsing, cross-client tie-break input, exception prose.
 │                  Every narration result passes llm.verify.gate_narration before being trusted.
-├── data/          seeded synthetic generator, the committed golden batch, and the 12-defect holdout (data/holdout.py)
-├── eval/          eval/ablation.py (narration-parser on/off) + eval/defects.py (the 12-defect held-out eval)
+├── data/          seeded synthetic generator, the committed golden batch, and the 14-defect holdout (data/holdout.py)
+├── eval/          eval/ablation.py (narration-parser on/off) + eval/defects.py (the 14-defect held-out eval)
 ├── report/        self-contained HTML report builder
 └── cli.py         the one-command entry point (stdlib argparse, zero deps for the core path)
 ```
@@ -181,8 +181,11 @@ exactly this reason. Confirm before relying on this for anything real.
 - Stage 4 set-matching (split/merged payments) is bounded to combinations
   of up to 3 credits/invoices — a documented cap, not silently unlimited.
 - `FX_SPREAD_UNEXPLAINED` (a foreign-wire FX-spread shortfall) has no
-  dedicated hypothesis yet — the 12-defect eval's one honest miss (see
+  dedicated hypothesis yet — the 14-defect eval's one honest miss (see
   `eval/defects.py`'s output and `data/holdout.py`'s `known_gap` field).
+  `OVER_PAID` and `GATEWAY_FEE_VARIANCE` were in the same state until
+  Entry 8 — both now have real matcher support and are caught by the
+  eval.
 - The Smart Collect A/B run (real Razorpay test-mode credentials
   collecting the same transactions via anonymous UPI vs. Smart Collect
   identifiers, per `plan/baaki.md` §4) needs a real Razorpay test
@@ -198,11 +201,12 @@ Highlights: the 194J threshold turned out to be cumulative-per-FY, not
 per-invoice (Entry 2); the synthetic generator's own round-number
 amounts were manufacturing fake collisions between unrelated clients
 (Entry 3); a genuine, conservation-law-invisible identity swap between
-two clients with identical invoice amounts (Entry 4); two more
+two clients with identical invoice amounts (Entry 4); several
 exception codes (`SHORT_PAID`, `MERGED_PAYMENT`,
-`PLATFORM_COMMISSION_VARIANCE`) that were defined but never actually
-assigned by the matcher (Entries 6-7); and building the 12-defect eval
-surfacing a chain of matching bugs that ultimately led to a real
-design principle — the matcher declines an ambiguous match rather than
-guessing, the same discipline already applied to the LLM layer, now
-applied to the deterministic core's own tie-breaks too (Entry 7).
+`PLATFORM_COMMISSION_VARIANCE`, `OVER_PAID`, `GATEWAY_FEE_VARIANCE`)
+that were defined but never actually assigned by the matcher (Entries
+6-8); and building the 14-defect eval surfacing a chain of matching
+bugs that ultimately led to a real design principle — the matcher
+declines an ambiguous match rather than guessing, the same discipline
+already applied to the LLM layer, now applied to the deterministic
+core's own tie-breaks too (Entry 7).
