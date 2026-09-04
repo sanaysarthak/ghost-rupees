@@ -14,7 +14,7 @@ INV-TIE-C/D abbreviates the name the way real bank narrations often
 do ("BLUPEAK CNSLTNG" for "BluePeak Consulting"), which defeats the
 substring check but is exactly the kind of thing a language model can
 still recognise. See DECISIONS.md Entry 7 and
-tests/test_engine.py::test_garbled_name_tie_is_wrong_without_llm_help.
+tests/test_engine.py::test_garbled_name_tie_is_declined_not_guessed_without_llm_help.
 
 This is the orchestration layer - the one place allowed to import BOTH
 core/ and llm/ - core/match.py itself never imports llm/ (see
@@ -80,7 +80,8 @@ def run_ablation(live: bool = False) -> None:
     c_off, d_off = _tie_outcome(ledger_off)
     print(f"  auto-match rate: {ledger_off.auto_match_rate_pct(batch.invoices):.2f}%")
     print(f"  INV-TIE-C -> {c_off}   INV-TIE-D -> {d_off}")
-    print(f"  correct? {c_off == 'CR-TIE-C' and d_off == 'CR-TIE-D'}")
+    print(f"  resolved correctly? {c_off == 'CR-TIE-C' and d_off == 'CR-TIE-D'}  "
+          f"(None means: honestly declined rather than guessed - the SAFE outcome without help)")
 
     print("\n=== STUB: digit-only baseline (the ablation's 'off' condition) ===")
     hint_stub = _build_hint_stub(batch)
@@ -89,7 +90,8 @@ def run_ablation(live: bool = False) -> None:
     c_stub, d_stub = _tie_outcome(ledger_stub)
     print(f"  auto-match rate: {ledger_stub.auto_match_rate_pct(batch.invoices):.2f}%")
     print(f"  INV-TIE-C -> {c_stub}   INV-TIE-D -> {d_stub}")
-    print(f"  correct? {c_stub == 'CR-TIE-C' and d_stub == 'CR-TIE-D'}")
+    print(f"  resolved correctly? {c_stub == 'CR-TIE-C' and d_stub == 'CR-TIE-D'}  "
+          f"(the digit-only stub extracts no counterparty either, so this stays declined too)")
 
     if live:
         print("\n=== ON: real Claude narration parser ===")
@@ -103,7 +105,8 @@ def run_ablation(live: bool = False) -> None:
         c_on, d_on = _tie_outcome(ledger_on)
         print(f"  auto-match rate: {ledger_on.auto_match_rate_pct(batch.invoices):.2f}%")
         print(f"  INV-TIE-C -> {c_on}   INV-TIE-D -> {d_on}")
-        print(f"  correct? {c_on == 'CR-TIE-C' and d_on == 'CR-TIE-D'}")
+        print(f"  resolved correctly? {c_on == 'CR-TIE-C' and d_on == 'CR-TIE-D'}  "
+              f"(this is what the real narration parser is expected to fix)")
     else:
         print("\n(pass --live to also run the real Claude call - needs ANTHROPIC_API_KEY)")
 

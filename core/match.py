@@ -141,6 +141,8 @@ def _stage3_hypothesis(
             distinct_credit_ids.append(c.credit_id)
     chosen_credit_id = distinct_credit_ids[0]
 
+    checked_and_zero_matched = False
+
     if len(distinct_credit_ids) > 1 and client_name:
         compact_client = _compact(client_name)
         # tier 1: deterministic substring match against raw narration
@@ -150,16 +152,37 @@ def _stage3_hypothesis(
         ]
         if len(substring_matched) == 1:
             chosen_credit_id = substring_matched[0]
-        elif narration_hint:
-            # tier 2: LLM-parsed counterparty name
-            client_tokens = _name_tokens(client_name)
-            hint_matched = [
-                cid for cid in distinct_credit_ids
-                if narration_hint.get(cid) and narration_hint[cid][0]
-                and _name_tokens(narration_hint[cid][0]) & client_tokens
-            ]
-            if len(hint_matched) == 1:
-                chosen_credit_id = hint_matched[0]
+        else:
+            hint_matched = []
+            if narration_hint:
+                # tier 2: LLM-parsed counterparty name
+                client_tokens = _name_tokens(client_name)
+                hint_matched = [
+                    cid for cid in distinct_credit_ids
+                    if narration_hint.get(cid) and narration_hint[cid][0]
+                    and _name_tokens(narration_hint[cid][0]) & client_tokens
+                ]
+                if len(hint_matched) == 1:
+                    chosen_credit_id = hint_matched[0]
+
+            if len(hint_matched) != 1 and not substring_matched:
+                # Every tied candidate's narration carries SOME
+                # identifiable text and NONE of it names this client -
+                # strong evidence the "match" is a pure amount
+                # coincidence between unrelated clients, not real
+                # uncertainty about which of several plausible
+                # candidates is right. Declining here (no match at all)
+                # beats a silent wrong guess - found on the holdout
+                # eval's HOLD-06 case, see DECISIONS.md.
+                any_readable_name = any(
+                    re.search(r"[a-z]{4,}", next(c for c, _ in matches if c.credit_id == cid).raw_narration.lower())
+                    for cid in distinct_credit_ids
+                )
+                if any_readable_name:
+                    checked_and_zero_matched = True
+
+    if checked_and_zero_matched:
+        return None
 
     return next((c, h) for c, h in matches if c.credit_id == chosen_credit_id)
 
@@ -170,19 +193,25 @@ SHORT_PAY_MIN_FRACTION = 0.5   # a candidate short-pay credit must be at least
 
 
 def _stage3b_short_pay(invoice: Invoice, hyps: list[Hypothesis],
-                        pool: list[Credit]) -> Credit | None:
+                        pool: list[Credit], client_name: str = "") -> Credit | None:
     """
     Not every gap has a lawful explanation. A client can simply pay less
     than invoiced with no deduction basis at all. Stage 3 (exact
     hypothesis match) already failed by the time this runs, so any
     candidate here is, by construction, an amount that matches NO lawful
     or common-error hypothesis - the defining feature of a short payment.
+    Scoped to credits whose narration names this client - turned out an
+    unscoped amount-range check was grabbing a completely unrelated
+    client's credit on the holdout eval (HOLD-06), same root cause as
+    the stage 4 collision bug. See DECISIONS.md.
     """
     gross = int(gross_amount(invoice))
     floor = int(gross * SHORT_PAY_MIN_FRACTION)
+    compact_client = _compact(client_name) if client_name else ""
     candidates = [
         c for c in pool
         if _within_window(invoice, c.value_date) and floor <= int(c.amount_paisa) < gross
+        and (not compact_client or compact_client in _compact(c.raw_narration))
     ]
     if len(candidates) == 1:
         return candidates[0]
@@ -351,12 +380,6 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
         if credit is not None and hyp is not None:
             consumed.add(credit.credit_id)
             _book_matched_invoice(ledger, batch, inv, hyp, credit, stage)
-            continue
-
-        short_credit = _stage3b_short_pay(inv, hyps, [c for c in pool if c.credit_id not in consumed])
-        if short_credit is not None:
-            consumed.add(short_credit.credit_id)
-            _book_short_paid(ledger, inv, short_credit)
         else:
             unresolved.append(inv)
 
@@ -410,6 +433,24 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
     for inv in still_unresolved:
         if inv.invoice_id not in merged_invoice_ids:
             final_unresolved.append(inv)
+
+    # --- stage 3b: short-pay, tried last (after split/merge have had their
+    # chance) so a genuine multi-credit split is never mistaken for a
+    # single-credit short payment on one of its parts.
+    still_final: list[Invoice] = []
+    for inv in final_unresolved:
+        client = batch.client(inv.client_id)
+        ruleset = resolve_ruleset(inv.issue_date)
+        prior = _prior_base_paisa_this_fy(batch, inv.client_id, ruleset.fy, inv.issue_date)
+        hyps = hypotheses_for_invoice(inv, ruleset, client, prior_base_paisa_this_fy=prior)
+        available = [c for c in pool if c.credit_id not in consumed]
+        short_credit = _stage3b_short_pay(inv, hyps, available, client.name)
+        if short_credit is not None:
+            consumed.add(short_credit.credit_id)
+            _book_short_paid(ledger, inv, short_credit)
+        else:
+            still_final.append(inv)
+    final_unresolved = still_final
 
     # --- everything still unresolved: SHORT, full gross, UNMATCHED_INVOICE
     for inv in final_unresolved:

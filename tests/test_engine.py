@@ -114,23 +114,30 @@ def test_narration_hint_resolves_the_cross_client_tie_correctly():
     assert line_b.proof.credit_id == "CR-TIE-B"
 
 
-def test_garbled_name_tie_is_wrong_without_llm_help():
+def test_garbled_name_tie_is_declined_not_guessed_without_llm_help():
     """
     INV-TIE-C/D: the real ablation scenario now, since the clean-name
     pair got solved for free. The narration abbreviates the counterparty
     name ("BLUPEAK CNSLTNG", "FRNHL MEDIA") the way real bank narrations
     often do - not a substring of the full client name, so tier 1 can't
-    resolve it. Without any hint it falls through to picking whichever
-    credit was found first, and comes out wrong.
+    resolve it. Both narrations DO carry other readable text, so the
+    matcher can tell that neither tied candidate actually names this
+    client - it declines to guess (an earlier version picked arbitrarily
+    and got it silently wrong instead). Both invoices end up honestly
+    unresolved rather than confidently wrong.
     """
     batch = generate_batch(seed=42, n_random=40)
     ledger = run_matcher(batch)
     ledger.assert_conserves(batch.invoices, gross_amount)
 
-    line_c = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-C" and l.proof)
-    line_d = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-D" and l.proof)
-    assert line_c.proof.credit_id == "CR-TIE-D"
-    assert line_d.proof.credit_id == "CR-TIE-C"
+    line_c = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-C" and l.proof), None)
+    line_d = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-D" and l.proof), None)
+    assert line_c is None and line_d is None   # declined, not silently matched to the wrong credit
+
+    codes_c = {e.code for e in ledger.invoice_exceptions if e.invoice_id == "INV-TIE-C"}
+    codes_d = {e.code for e in ledger.invoice_exceptions if e.invoice_id == "INV-TIE-D"}
+    assert ExceptionCode.UNMATCHED_INVOICE in codes_c
+    assert ExceptionCode.UNMATCHED_INVOICE in codes_d
 
 
 def test_narration_hint_resolves_a_tie_the_substring_check_cannot():
