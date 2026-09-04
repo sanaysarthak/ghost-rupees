@@ -107,16 +107,22 @@ def _stage3_hypothesis(
     narration_hint: dict[str, tuple[str | None, str | None]] | None = None,
 ) -> tuple[Credit, Hypothesis] | None:
     """
-    narration_hint: optional {credit_id: (parsed_counterparty, parsed_utr)},
-    built by the CALLER from llm.narration output and passed in as plain
-    tuples specifically so this module never imports llm/ - see the
-    module docstring and tests/test_import_boundary.py. When two or more
-    DISTINCT credits tie on predicted amount within the window (a genuine
-    cross-client collision, not just two hypotheses on the same credit),
-    a hint whose parsed counterparty name shares a token with the
-    invoice's client name resolves the tie correctly; without a hint,
-    the tie falls back to picking whichever credit was encountered
-    first.
+    Cross-credit ties (two or more DISTINCT credits predicting the same
+    net for this invoice - a genuine cross-client collision, not just
+    two hypotheses on the same credit) are resolved in two tiers,
+    cheapest first:
+
+    1. Deterministic: does a candidate's raw narration directly contain
+       this client's (compacted, letters-only) name as a substring? No
+       model call, free, and resolves the common case where the bank
+       narration spells the name out in full.
+    2. narration_hint: an LLM-parsed counterparty name (from
+       llm.narration, passed in by the CALLER as plain tuples - never
+       imported directly here, see the module docstring and
+       tests/test_import_boundary.py) for cases where tier 1 fails.
+
+    Failing both, this falls back to picking whichever credit was
+    encountered first.
     """
     candidates = [c for c in pool if _within_window(invoice, c.value_date)]
     matches: list[tuple[Credit, Hypothesis]] = []
@@ -135,15 +141,25 @@ def _stage3_hypothesis(
             distinct_credit_ids.append(c.credit_id)
     chosen_credit_id = distinct_credit_ids[0]
 
-    if len(distinct_credit_ids) > 1 and narration_hint and client_name:
-        client_tokens = _name_tokens(client_name)
-        name_matched_ids = [
+    if len(distinct_credit_ids) > 1 and client_name:
+        compact_client = _compact(client_name)
+        # tier 1: deterministic substring match against raw narration
+        substring_matched = [
             cid for cid in distinct_credit_ids
-            if narration_hint.get(cid) and narration_hint[cid][0]
-            and _name_tokens(narration_hint[cid][0]) & client_tokens
+            if compact_client and compact_client in _compact(next(c for c, _ in matches if c.credit_id == cid).raw_narration)
         ]
-        if len(name_matched_ids) == 1:
-            chosen_credit_id = name_matched_ids[0]
+        if len(substring_matched) == 1:
+            chosen_credit_id = substring_matched[0]
+        elif narration_hint:
+            # tier 2: LLM-parsed counterparty name
+            client_tokens = _name_tokens(client_name)
+            hint_matched = [
+                cid for cid in distinct_credit_ids
+                if narration_hint.get(cid) and narration_hint[cid][0]
+                and _name_tokens(narration_hint[cid][0]) & client_tokens
+            ]
+            if len(hint_matched) == 1:
+                chosen_credit_id = hint_matched[0]
 
     return next((c, h) for c, h in matches if c.credit_id == chosen_credit_id)
 

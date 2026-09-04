@@ -73,17 +73,17 @@ def test_a_credit_exception_exists_for_unmatched_money_in():
     assert ExceptionCode.DUPLICATE_CREDIT in codes
 
 
-def test_cross_client_tie_is_wrong_without_a_narration_hint():
+def test_cross_client_tie_resolves_deterministically_via_substring_match():
     """
-    Documents a real, dangerous defect class: two different clients
-    invoice the identical amount, paid by generic UPI credits with no
-    Razorpay identifiers and no UTR either invoice references. Amount+
-    date matching alone (stage 3) cannot tell them apart, and without
-    narration-derived counterparty names to break the tie, the matcher
-    picks whichever credit it encountered first - which is wrong here by
-    deliberate construction. Conservation still holds (the ledger
-    balances either way), which is exactly why this bug is dangerous: it
-    is invisible to Gate 1 and to the auto-match rate.
+    Two different clients invoice the identical amount, paid by generic
+    UPI credits with no Razorpay identifiers and no UTR either invoice
+    references, so amount+date alone (stage 3's core comparison) cannot
+    tell them apart. Here the narration spells the counterparty name out
+    in full ("BLUEPEAKCONSULTING"), so core.match's tier-1 free substring
+    check resolves the tie correctly with NO model call. This used to be
+    a "wrong without a hint" test - turns out the free check added for
+    the holdout eval fixes this one too. Kept as a regression test for
+    that.
     """
     batch = generate_batch(seed=42, n_random=40)
     ledger = run_matcher(batch)
@@ -91,10 +91,8 @@ def test_cross_client_tie_is_wrong_without_a_narration_hint():
 
     line_a = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-A" and l.proof)
     line_b = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-B" and l.proof)
-    # deliberately asserting the WRONG outcome - this is what "no
-    # disambiguation available" actually produces today
-    assert line_a.proof.credit_id == "CR-TIE-B"
-    assert line_b.proof.credit_id == "CR-TIE-A"
+    assert line_a.proof.credit_id == "CR-TIE-A"
+    assert line_b.proof.credit_id == "CR-TIE-B"
 
 
 def test_narration_hint_resolves_the_cross_client_tie_correctly():
