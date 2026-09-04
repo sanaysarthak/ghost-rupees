@@ -279,6 +279,38 @@ def _compact(s: str) -> str:
     return re.sub(r"[^a-z]", "", s.lower())
 
 
+OVER_PAY_MAX_FRACTION = 1.5   # a candidate over-payment credit must be no
+                               # more than this multiple of gross, or it's
+                               # more likely an unrelated larger credit
+                               # (or a genuine split/merge case) than a
+                               # simple over-payment on this one invoice
+
+
+def _stage3c_over_paid(invoice: Invoice, pool: list[Credit], client_name: str = "") -> Credit | None:
+    """
+    The mirror image of _stage3b_short_pay: a customer can pay MORE than
+    invoiced (a duplicate transfer, a rounding-up, an advance folded in)
+    with no hypothesis predicting that exact amount. By the time this
+    runs, stages 1-3 and stage 4 (split/merge) have already had their
+    chance, so a credit landing here genuinely doesn't fit any of those
+    shapes. Same discipline as the short-pay stage: scoped to a single,
+    narration-confirmed candidate within a bounded multiple of gross, so
+    an unrelated larger credit doesn't get silently annexed onto this
+    invoice.
+    """
+    gross = int(gross_amount(invoice))
+    ceiling = int(gross * OVER_PAY_MAX_FRACTION)
+    compact_client = _compact(client_name) if client_name else ""
+    candidates = [
+        c for c in pool
+        if _within_window(invoice, c.value_date) and gross < int(c.amount_paisa) <= ceiling
+        and (not compact_client or compact_client in _compact(c.raw_narration))
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
 def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
                    pool: list[Credit], client_name: str = "") -> tuple[list[Credit], Hypothesis] | None:
     """
@@ -497,6 +529,21 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
             still_final.append(inv)
     final_unresolved = still_final
 
+    # --- stage 3c: over-pay, tried after short-pay for the same reason -
+    # give split/merge/short-pay every chance first, so a genuinely
+    # multi-part settlement is never mistaken for a simple over-payment.
+    still_final2: list[Invoice] = []
+    for inv in final_unresolved:
+        client = batch.client(inv.client_id)
+        available = [c for c in pool if c.credit_id not in consumed]
+        over_credit = _stage3c_over_paid(inv, available, client.name)
+        if over_credit is not None:
+            consumed.add(over_credit.credit_id)
+            _book_over_paid(ledger, inv, over_credit)
+        else:
+            still_final2.append(inv)
+    final_unresolved = still_final2
+
     # --- everything still unresolved: SHORT, full gross, UNMATCHED_INVOICE
     for inv in final_unresolved:
         gross = gross_amount(inv)
@@ -544,6 +591,30 @@ def _book_short_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
         invoice_id=inv.invoice_id, credit_id=credit.credit_id, amount_paisa=shortfall,
         explanation=f"Invoice {inv.invoice_id}: Rs {shortfall/100:.2f} short, with no matching "
                     f"lawful deduction hypothesis for the gap.",
+    ))
+
+
+def _book_over_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
+    gross = gross_amount(inv)
+    excess = Paisa(int(credit.amount_paisa) - int(gross))
+    proof = Proof(
+        stage="stage3c_over_paid", rule_fired="over_paid", invoice_id=inv.invoice_id,
+        credit_id=credit.credit_id,
+        fields_compared={"gross_paisa": int(gross), "received_paisa": int(credit.amount_paisa)},
+        residual_paisa=Paisa(0),
+    )
+    # the invoice's own bucket accounting only ever covers its own gross -
+    # the excess isn't part of what was invoiced, so it's recorded as an
+    # exception (tied to both the invoice and the credit) rather than a
+    # fifth ledger bucket. This keeps the conservation law's per-invoice
+    # identity exact: RECEIVED alone explains the whole invoice here.
+    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.RECEIVED, amount_paisa=gross,
+                           note="Overpaid - full invoice amount received, plus an excess.", proof=proof))
+    ledger.add_invoice_exception(Exception_.make(
+        ExceptionCode.OVER_PAID,
+        invoice_id=inv.invoice_id, credit_id=credit.credit_id, amount_paisa=excess,
+        explanation=f"Invoice {inv.invoice_id}: Rs {excess/100:.2f} more than invoiced arrived in a "
+                    f"single credit - confirm before spending it, may be a duplicate payment or an advance.",
     ))
 
 
