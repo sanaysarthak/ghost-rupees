@@ -72,6 +72,32 @@ def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client,
     if kind == DeductionKind.NONE:
         return hyps
 
+    if kind == DeductionKind.PLATFORM_COMMISSION:
+        # Not a statutory rate - platform commission is a privately
+        # contracted percentage (Client.contracted_commission_bps), not
+        # in core.rules.registry at all, and has no Form 26AS concept
+        # (core.match._book_matched_invoice must not treat it as TDS).
+        if client.contracted_commission_bps is None:
+            return hyps
+        correct_bps = client.contracted_commission_bps
+        ded_correct = apply_bps(base, correct_bps)
+        hyps.append(Hypothesis(
+            label="lawful_correct", predicted_net_paisa=Paisa(gross - ded_correct),
+            deduction_kind=kind, deduction_amount_paisa=ded_correct, lawful=True,
+            exception_if_matched=None,
+            explanation=f"Platform commission at the contracted {correct_bps/100:.2f}% rate.",
+        ))
+        over_bps = correct_bps + 300   # a plausible over-charge to model
+        ded_over = apply_bps(base, over_bps)
+        hyps.append(Hypothesis(
+            label="commission_over_contracted_rate", predicted_net_paisa=Paisa(gross - ded_over),
+            deduction_kind=kind, deduction_amount_paisa=ded_over, lawful=False,
+            exception_if_matched=ExceptionCode.PLATFORM_COMMISSION_VARIANCE,
+            explanation=f"Commission charged at {over_bps/100:.2f}%, above the contracted "
+                        f"{correct_bps/100:.2f}% rate.",
+        ))
+        return hyps
+
     rule = ruleset.rule_for(kind, pan_on_file=client.pan_on_file)
     if rule is None:
         return hyps

@@ -100,3 +100,37 @@ def test_rate_mismatch_hypothesis_present_for_194j_family():
     hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
     assert "wrong_rate_from_TDS_TECHNICAL_194J" in hyps
     assert hyps["wrong_rate_from_TDS_TECHNICAL_194J"].lawful is False
+
+
+def test_platform_commission_uses_contracted_rate_not_statutory_table():
+    from core.classify import ExceptionCode
+
+    client = Client(client_id="cli_platform", name="Some Platform Client",
+                     pan_on_file=True, tan=None, contracted_commission_bps=200)  # 2%
+    inv = Invoice(
+        invoice_id="INV-PLAT-01", client_id="cli_platform",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("10000.00"), gst_applicable=False,
+        deduction_kind=DeductionKind.PLATFORM_COMMISSION,
+    )
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+
+    assert hyps["lawful_correct"].deduction_amount_paisa == rupees_to_paisa("200.00")  # 2% of 10,000
+    assert hyps["lawful_correct"].lawful is True
+    assert hyps["commission_over_contracted_rate"].exception_if_matched == ExceptionCode.PLATFORM_COMMISSION_VARIANCE
+    assert hyps["commission_over_contracted_rate"].deduction_amount_paisa == rupees_to_paisa("500.00")  # 5%
+
+
+def test_platform_commission_with_no_contracted_rate_yields_no_deduction_hypothesis():
+    client = Client(client_id="cli_noplat", name="No Contract Client",
+                     pan_on_file=True, tan=None, contracted_commission_bps=None)
+    inv = Invoice(
+        invoice_id="INV-PLAT-02", client_id="cli_noplat",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("10000.00"), gst_applicable=False,
+        deduction_kind=DeductionKind.PLATFORM_COMMISSION,
+    )
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+    assert list(hyps.keys()) == ["no_deduction"]

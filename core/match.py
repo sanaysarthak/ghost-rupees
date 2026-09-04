@@ -349,6 +349,17 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
                 if inv.invoice_id in per_invoice_hyp:
                     _book_matched_invoice(ledger, batch, inv, per_invoice_hyp[inv.invoice_id], credit, "stage4_merge")
                     merged_invoice_ids.add(inv.invoice_id)
+            if len(per_invoice_hyp) > 1:
+                for inv in invs:
+                    if inv.invoice_id in per_invoice_hyp:
+                        ledger.add_invoice_exception(Exception_.make(
+                            ExceptionCode.MERGED_PAYMENT,
+                            invoice_id=inv.invoice_id, credit_id=credit.credit_id,
+                            amount_paisa=gross_amount(inv),
+                            explanation=f"Invoice {inv.invoice_id} was settled together with "
+                                        f"{len(per_invoice_hyp) - 1} other invoice(s) in a single credit "
+                                        f"({credit.credit_id}).",
+                        ))
 
     for inv in still_unresolved:
         if inv.invoice_id not in merged_invoice_ids:
@@ -403,7 +414,8 @@ def _book_matched_invoice(ledger: Ledger, batch: Batch, inv: Invoice, hyp: Hypot
     ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.RECEIVED, amount_paisa=received,
                            note=f"Matched via {stage} ({hyp.label}).", proof=proof))
 
-    if int(hyp.deduction_amount_paisa) > 0:
+    is_statutory_tds = hyp.deduction_kind.value.startswith("TDS_")
+    if int(hyp.deduction_amount_paisa) > 0 and is_statutory_tds:
         entry = _form26as_has(batch, client.tan, hyp.deduction_amount_paisa, inv.issue_date)
         bucket = Bucket.DEDUCTED_CREDITABLE if entry is not None else Bucket.DEDUCTED_UNCREDITABLE
         ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=bucket,
@@ -417,6 +429,13 @@ def _book_matched_invoice(ledger: Ledger, batch: Batch, inv: Invoice, hyp: Hypot
                             f"{inv.invoice_id} but no matching entry found in Form 26AS for "
                             f"deductor TAN {client.tan!r}.",
             ))
+    elif int(hyp.deduction_amount_paisa) > 0:
+        # non-TDS deduction (platform commission, gateway fee) - Form 26AS
+        # doesn't apply; it always books to DEDUCTED_CREDITABLE (any rate
+        # variance is its own exception, added below via hyp.exception_if_matched).
+        ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.DEDUCTED_CREDITABLE,
+                               amount_paisa=hyp.deduction_amount_paisa,
+                               note=hyp.explanation, proof=proof))
 
     if hyp.exception_if_matched is not None and hyp.exception_if_matched != ExceptionCode.TDS_NOT_IN_26AS:
         ledger.add_invoice_exception(Exception_.make(
