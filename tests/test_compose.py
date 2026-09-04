@@ -1,0 +1,54 @@
+"""Validates the exact worked example from plan/baaki.md §5:
+
+Invoice: Rs 20,000 professional services, GST shown separately -> gross Rs 23,600.
+H1 lawful_correct               -> 21,600
+H2 rate_on_gst_inclusive        -> 21,240
+H3 gst_omitted_with_correct_tds -> 18,000
+H0 no_deduction                 -> 23,600
+"""
+
+from datetime import date
+
+from core.compose import gross_amount, hypotheses_for_invoice
+from core.models import Client, DeductionKind, Invoice
+from core.money import rupees_to_paisa
+from core.rules.registry import resolve as resolve_ruleset
+
+
+def _client(pan_on_file=True):
+    return Client(client_id="cli_test", name="Arjun Textiles Pvt Ltd", pan_on_file=pan_on_file, tan="DELA12345B")
+
+
+def _invoice():
+    return Invoice(
+        invoice_id="INV-014", client_id="cli_test",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("20000.00"), gst_applicable=True,
+        deduction_kind=DeductionKind.TDS_PROFESSIONAL_194J,
+    )
+
+
+def test_gross_amount_includes_gst():
+    inv = _invoice()
+    assert gross_amount(inv) == rupees_to_paisa("23600.00")
+
+
+def test_worked_example_hypotheses():
+    inv = _invoice()
+    client = _client()
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+
+    assert hyps["no_deduction"].predicted_net_paisa == rupees_to_paisa("23600.00")
+    assert hyps["lawful_correct"].predicted_net_paisa == rupees_to_paisa("21600.00")
+    assert hyps["rate_on_gst_inclusive"].predicted_net_paisa == rupees_to_paisa("21240.00")
+    assert hyps["gst_omitted_with_correct_tds"].predicted_net_paisa == rupees_to_paisa("18000.00")
+
+
+def test_rate_mismatch_hypothesis_present_for_194j_family():
+    inv = _invoice()
+    client = _client()
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+    assert "wrong_rate_from_TDS_TECHNICAL_194J" in hyps
+    assert hyps["wrong_rate_from_TDS_TECHNICAL_194J"].lawful is False
