@@ -12,11 +12,13 @@ auto-match rate (Ledger.auto_match_rate_pct) - the percentage of
 invoices whose SHORT bucket is zero - and that is a real, gameable
 number this module has to earn.
 
-Stage 2 (UTR lookup via Razorpay's "Fetch Payments Using UTR" API) is
-implemented as a clearly-labelled seam: it takes an injectable
-resolver that is a no-op by default (wiring it to the live API is a
-one-function job, deliberately left for when real Razorpay
-credentials are available).
+Stage 2 (UTR lookup via Razorpay's "Fetch Payments Using UTR" API) and
+stage 5 (LLM tie-break) are implemented as clearly-labelled seams:
+stage 2 takes an injectable resolver that is a no-op by default
+(wiring it to the live API is a one-function job, deliberately left
+for when real Razorpay credentials are available); stage 5 auto-picks
+by a documented priority order and flags the decision as `ambiguous`
+rather than silently guessing.
 """
 
 from __future__ import annotations
@@ -37,6 +39,14 @@ from core.rules.registry import resolve as resolve_ruleset
 
 MATCH_WINDOW_DAYS = 45
 MAX_SET_SIZE = 3
+
+# Priority order for auto-resolving a tie between hypotheses that predict
+# the identical net (stage 5's deterministic fallback before/without an
+# LLM tie-break call).
+_HYPOTHESIS_PRIORITY = [
+    "lawful_correct",
+    "no_deduction",
+]
 
 
 def _utr_normalise(u: str | None) -> str | None:
@@ -71,6 +81,8 @@ class MatchOutcome:
     stage: str | None
     credit_ids: list[str]
     hypothesis: Hypothesis | None
+    ambiguous: bool = False
+    alternate_labels: list[str] = field(default_factory=list)
 
 
 def _stage1_identity(invoice: Invoice, pool: list[Credit]) -> Credit | None:
@@ -84,6 +96,12 @@ def _stage1_identity(invoice: Invoice, pool: list[Credit]) -> Credit | None:
 
 def _stage2_utr(invoice: Invoice, pool: list[Credit],
                  utr_resolver: Callable[[str], str | None]) -> Credit | None:
+    """
+    utr_resolver maps a normalised UTR -> a razorpay_payment_id, standing in
+    for a call to Razorpay's Fetch-Payments-Using-UTR API. Default resolver
+    (see resolve_all) always returns None, so this stage is a documented
+    no-op until wired to real credentials.
+    """
     for c in pool:
         norm = _utr_normalise(c.utr)
         if not norm:
@@ -105,24 +123,27 @@ def _name_tokens(s: str) -> set[str]:
 def _stage3_hypothesis(
     invoice: Invoice, hyps: list[Hypothesis], pool: list[Credit], client_name: str = "",
     narration_hint: dict[str, tuple[str | None, str | None]] | None = None,
-) -> tuple[Credit, Hypothesis] | None:
+) -> tuple[Credit, Hypothesis, bool, list[str]] | None:
     """
     Cross-credit ties (two or more DISTINCT credits predicting the same
     net for this invoice - a genuine cross-client collision, not just
-    two hypotheses on the same credit) are resolved in two tiers,
-    cheapest first:
+    two hypotheses on the same credit) are resolved in three escalating
+    tiers, cheapest first - this is the project's "right tool in the
+    right place" line made literal:
 
     1. Deterministic: does a candidate's raw narration directly contain
        this client's (compacted, letters-only) name as a substring? No
        model call, free, and resolves the common case where the bank
-       narration spells the name out in full.
+       narration spells the name out in full (however it's punctuated).
     2. narration_hint: an LLM-parsed counterparty name (from
        llm.narration, passed in by the CALLER as plain tuples - never
        imported directly here, see the module docstring and
-       tests/test_import_boundary.py) for cases where tier 1 fails.
-
-    Failing both, this falls back to picking whichever credit was
-    encountered first.
+       tests/test_import_boundary.py) for cases where tier 1 fails
+       because the narration abbreviates, truncates, or garbles the
+       name in a way substring matching can't see through but language
+       understanding can.
+    3. Arbitrary first-found - the residual, explicitly-flagged
+       `ambiguous=True` case neither tier could resolve.
     """
     candidates = [c for c in pool if _within_window(invoice, c.value_date)]
     matches: list[tuple[Credit, Hypothesis]] = []
@@ -132,15 +153,17 @@ def _stage3_hypothesis(
                 matches.append((c, h))
     if not matches:
         return None
+    if len(matches) == 1:
+        c, h = matches[0]
+        return c, h, False, []
 
-    seen_ids: set[str] = set()
-    distinct_credit_ids: list[str] = []
-    for c, _ in matches:
-        if c.credit_id not in seen_ids:
-            seen_ids.add(c.credit_id)
-            distinct_credit_ids.append(c.credit_id)
-    chosen_credit_id = distinct_credit_ids[0]
+    by_credit: dict[str, list[Hypothesis]] = {}
+    for c, h in matches:
+        by_credit.setdefault(c.credit_id, []).append(h)
+    distinct_credit_ids = list(by_credit.keys())
 
+    chosen_credit_id: str | None = None
+    resolved_by_narration = False
     checked_and_zero_matched = False
 
     if len(distinct_credit_ids) > 1 and client_name:
@@ -152,39 +175,66 @@ def _stage3_hypothesis(
         ]
         if len(substring_matched) == 1:
             chosen_credit_id = substring_matched[0]
-        else:
-            hint_matched = []
-            if narration_hint:
-                # tier 2: LLM-parsed counterparty name
-                client_tokens = _name_tokens(client_name)
-                hint_matched = [
-                    cid for cid in distinct_credit_ids
-                    if narration_hint.get(cid) and narration_hint[cid][0]
-                    and _name_tokens(narration_hint[cid][0]) & client_tokens
-                ]
-                if len(hint_matched) == 1:
-                    chosen_credit_id = hint_matched[0]
+            resolved_by_narration = True
+        elif narration_hint:
+            # tier 2: LLM-parsed counterparty name
+            client_tokens = _name_tokens(client_name)
+            hint_matched = [
+                cid for cid in distinct_credit_ids
+                if narration_hint.get(cid) and narration_hint[cid][0]
+                and _name_tokens(narration_hint[cid][0]) & client_tokens
+            ]
+            if len(hint_matched) == 1:
+                chosen_credit_id = hint_matched[0]
+                resolved_by_narration = True
 
-            if len(hint_matched) != 1 and not substring_matched:
-                # Every tied candidate's narration carries SOME
-                # identifiable text and NONE of it names this client -
-                # strong evidence the "match" is a pure amount
-                # coincidence between unrelated clients, not real
-                # uncertainty about which of several plausible
-                # candidates is right. Declining here (no match at all)
-                # beats a silent wrong guess - found on the holdout
-                # eval's HOLD-06 case, see DECISIONS.md.
-                any_readable_name = any(
-                    re.search(r"[a-z]{4,}", next(c for c, _ in matches if c.credit_id == cid).raw_narration.lower())
-                    for cid in distinct_credit_ids
-                )
-                if any_readable_name:
-                    checked_and_zero_matched = True
+        if chosen_credit_id is None and not substring_matched:
+            # Every tied candidate's narration carries SOME identifiable
+            # text (checked below) and NONE of it names this client - that
+            # is strong evidence the "match" is a pure amount coincidence
+            # between unrelated clients, not real uncertainty about which
+            # of several plausible candidates is right. Declining here
+            # (returning no match at all, rather than guessing tier 3)
+            # is the same "never commit above threshold without real
+            # confidence" principle this project applies everywhere else -
+            # an honest miss beats a silent wrong match. Found empirically
+            # via the 12-defect holdout eval: without this, an unrelated
+            # invoice's own exact-amount hypothesis was silently stealing
+            # another client's credit. See DECISIONS.md.
+            any_readable_name = any(
+                re.search(r"[a-z]{4,}", next(c for c, _ in matches if c.credit_id == cid).raw_narration.lower())
+                for cid in distinct_credit_ids
+            )
+            if any_readable_name:
+                checked_and_zero_matched = True
 
     if checked_and_zero_matched:
         return None
 
-    return next((c, h) for c, h in matches if c.credit_id == chosen_credit_id)
+    if chosen_credit_id is None:
+        # tier 3: arbitrary first-found credit - the residual gap where
+        # narrations carried no identifiable name at all to check against.
+        chosen_credit_id = distinct_credit_ids[0]
+
+    chosen_credit = next(c for c, _ in matches if c.credit_id == chosen_credit_id)
+    hyp_options = by_credit[chosen_credit_id]
+
+    def priority(h: Hypothesis) -> int:
+        try:
+            return _HYPOTHESIS_PRIORITY.index(h.label)
+        except ValueError:
+            return len(_HYPOTHESIS_PRIORITY) + 1
+
+    hyp_options_sorted = sorted(hyp_options, key=priority)
+    chosen_hyp = hyp_options_sorted[0]
+    alternates = [h.label for h in hyp_options_sorted[1:]]
+    # only flag as ambiguous if a *cross-credit* tie remains unresolved -
+    # ties purely between hypotheses on the SAME credit are a modelling
+    # nicety (which lawful story explains this one credit), not a real
+    # "which money is this" ambiguity, so they don't need to be flagged
+    # to the same degree.
+    ambiguous = len(distinct_credit_ids) > 1 and not resolved_by_narration
+    return chosen_credit, chosen_hyp, ambiguous, alternates
 
 
 SHORT_PAY_MIN_FRACTION = 0.5   # a candidate short-pay credit must be at least
@@ -200,44 +250,29 @@ def _stage3b_short_pay(invoice: Invoice, hyps: list[Hypothesis],
     hypothesis match) already failed by the time this runs, so any
     candidate here is, by construction, an amount that matches NO lawful
     or common-error hypothesis - the defining feature of a short payment.
-    Scoped to credits whose narration names this client - turned out an
-    unscoped amount-range check was grabbing a completely unrelated
-    client's credit on the holdout eval (HOLD-06), same root cause as
-    the stage 4 collision bug. See DECISIONS.md.
+    Requires a single unambiguous candidate within the window, no less
+    than SHORT_PAY_MIN_FRACTION of gross, AND (when a client name is
+    given) whose narration shares a name token with this invoice's
+    client - a bare amount-range filter alone can accidentally scoop up
+    a credit that actually belongs to a different client's invoice
+    (their own exact match just hasn't been tried yet in the processing
+    order), which is a worse error than declining to guess.
     """
     gross = int(gross_amount(invoice))
     floor = int(gross * SHORT_PAY_MIN_FRACTION)
-    compact_client = _compact(client_name) if client_name else ""
+    # Narrations concatenate the counterparty name with no spaces (e.g.
+    # "BLUEPEAKCONSULTING"), so a token-SET overlap against the spaced
+    # client name never matches - compare compact (letters-only) forms
+    # with substring containment instead.
+    compact_client = re.sub(r"[^a-z]", "", client_name.lower()) if client_name else ""
     candidates = [
         c for c in pool
         if _within_window(invoice, c.value_date) and floor <= int(c.amount_paisa) < gross
-        and (not compact_client or compact_client in _compact(c.raw_narration))
+        and (not compact_client or compact_client in re.sub(r"[^a-z]", "", c.raw_narration.lower()))
     ]
     if len(candidates) == 1:
         return candidates[0]
     return None
-
-
-def _book_short_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
-    gross = gross_amount(inv)
-    received = credit.amount_paisa
-    shortfall = Paisa(int(gross) - int(received))
-    proof = Proof(
-        stage="stage3b_short_pay", rule_fired="short_paid", invoice_id=inv.invoice_id,
-        credit_id=credit.credit_id,
-        fields_compared={"gross_paisa": int(gross), "received_paisa": int(received)},
-        residual_paisa=Paisa(0),
-    )
-    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.RECEIVED, amount_paisa=received,
-                           note="Partial payment, no lawful deduction basis found.", proof=proof))
-    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.SHORT, amount_paisa=shortfall,
-                           note="Shortfall with no lawful basis.", proof=proof))
-    ledger.add_invoice_exception(Exception_.make(
-        ExceptionCode.SHORT_PAID,
-        invoice_id=inv.invoice_id, credit_id=credit.credit_id, amount_paisa=shortfall,
-        explanation=f"Invoice {inv.invoice_id}: Rs {shortfall/100:.2f} short, with no matching "
-                    f"lawful deduction hypothesis for the gap.",
-    ))
 
 
 def _compact(s: str) -> str:
@@ -360,10 +395,17 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
         credit = _stage1_identity(inv, available)
         stage = "stage1_identity"
         hyp: Hypothesis | None = None
+        ambiguous = False
+        alternates: list[str] = []
 
         if credit is not None:
+            # identity match found the credit; still need the hypothesis
+            # that explains its amount, so the deduction split is correct.
             hyp = next((h for h in hyps if int(h.predicted_net_paisa) == int(credit.amount_paisa)), None)
             if hyp is None:
+                # identity is certain but amount doesn't match any modelled
+                # hypothesis - fall back to "no_deduction" bookkeeping and
+                # let the residual show up honestly as a variance.
                 hyp = hyps[0]
         else:
             credit = _stage2_utr(inv, available, utr_resolver)
@@ -375,11 +417,11 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
             found = _stage3_hypothesis(inv, hyps, available, client.name, narration_hint)
             stage = "stage3_hypothesis"
             if found is not None:
-                credit, hyp = found
+                credit, hyp, ambiguous, alternates = found
 
         if credit is not None and hyp is not None:
             consumed.add(credit.credit_id)
-            _book_matched_invoice(ledger, batch, inv, hyp, credit, stage)
+            _book_matched_invoice(ledger, batch, inv, hyp, credit, stage, ambiguous, alternates)
         else:
             unresolved.append(inv)
 
@@ -396,7 +438,7 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
             credits, hyp = found
             for c in credits:
                 consumed.add(c.credit_id)
-            _book_matched_invoice(ledger, batch, inv, hyp, credits, "stage4_split")
+            _book_matched_invoice(ledger, batch, inv, hyp, credits, "stage4_split", False, [])
         else:
             still_unresolved.append(inv)
 
@@ -416,7 +458,10 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
             consumed.add(credit.credit_id)
             for inv in invs:
                 if inv.invoice_id in per_invoice_hyp:
-                    _book_matched_invoice(ledger, batch, inv, per_invoice_hyp[inv.invoice_id], credit, "stage4_merge")
+                    _book_matched_invoice(
+                        ledger, batch, inv, per_invoice_hyp[inv.invoice_id], credit,
+                        "stage4_merge", False, [],
+                    )
                     merged_invoice_ids.add(inv.invoice_id)
             if len(per_invoice_hyp) > 1:
                 for inv in invs:
@@ -480,8 +525,30 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
     return ledger
 
 
+def _book_short_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
+    gross = gross_amount(inv)
+    received = credit.amount_paisa
+    shortfall = Paisa(int(gross) - int(received))
+    proof = Proof(
+        stage="stage3b_short_pay", rule_fired="short_paid", invoice_id=inv.invoice_id,
+        credit_id=credit.credit_id,
+        fields_compared={"gross_paisa": int(gross), "received_paisa": int(received)},
+        residual_paisa=Paisa(0),
+    )
+    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.RECEIVED, amount_paisa=received,
+                           note="Partial payment, no lawful deduction basis found.", proof=proof))
+    ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.SHORT, amount_paisa=shortfall,
+                           note="Shortfall with no lawful basis.", proof=proof))
+    ledger.add_invoice_exception(Exception_.make(
+        ExceptionCode.SHORT_PAID,
+        invoice_id=inv.invoice_id, credit_id=credit.credit_id, amount_paisa=shortfall,
+        explanation=f"Invoice {inv.invoice_id}: Rs {shortfall/100:.2f} short, with no matching "
+                    f"lawful deduction hypothesis for the gap.",
+    ))
+
+
 def _book_matched_invoice(ledger: Ledger, batch: Batch, inv: Invoice, hyp: Hypothesis,
-                           credit_or_credits, stage: str) -> None:
+                           credit_or_credits, stage: str, ambiguous: bool, alternates: list[str]) -> None:
     client = batch.client(inv.client_id)
     credits = credit_or_credits if isinstance(credit_or_credits, list) else [credit_or_credits]
     credit_ids = [c.credit_id for c in credits]
@@ -494,6 +561,7 @@ def _book_matched_invoice(ledger: Ledger, batch: Batch, inv: Invoice, hyp: Hypot
         fields_compared={
             "predicted_net_paisa": int(hyp.predicted_net_paisa),
             "credit_total_paisa": sum(int(c.amount_paisa) for c in credits),
+            "ambiguous": ambiguous, "alternates": alternates,
         },
         residual_paisa=Paisa(int(hyp.predicted_net_paisa) - sum(int(c.amount_paisa) for c in credits)),
     )
@@ -518,8 +586,9 @@ def _book_matched_invoice(ledger: Ledger, batch: Batch, inv: Invoice, hyp: Hypot
             ))
     elif int(hyp.deduction_amount_paisa) > 0:
         # non-TDS deduction (platform commission, gateway fee) - Form 26AS
-        # doesn't apply; it always books to DEDUCTED_CREDITABLE (any rate
-        # variance is its own exception, added below via hyp.exception_if_matched).
+        # doesn't apply; it's a real cost, not a tax credit, so it always
+        # books to DEDUCTED_CREDITABLE (any rate variance is its own
+        # exception, added below via hyp.exception_if_matched).
         ledger.add(LedgerLine(invoice_id=inv.invoice_id, bucket=Bucket.DEDUCTED_CREDITABLE,
                                amount_paisa=hyp.deduction_amount_paisa,
                                note=hyp.explanation, proof=proof))
