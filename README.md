@@ -159,12 +159,20 @@ line applied literally, three tiers deep.
 
 ## The rule tables
 
-See `plan/baaki.md` §7 for the full table with citations. **These rates
-are from tax-advisory secondary sources current as of August 2026,
-cross-checked across several, but not verified against the Income Tax
-Department's own primary publication.** Every `Rule` in
-`core/rules/registry.py` carries a `verification_status` field for
-exactly this reason. Confirm before relying on this for anything real.
+See `plan/baaki.md` §7 for the full table, and its Verification log for
+the row-by-row detail. Re-verified 5 September 2026 against multiple
+independent sources per row (not just one), specifically checking exact
+numbers and effective dates rather than trusting a general topic match.
+Two real issues were found this way and fixed: the no-PAN override rate
+was wrong for 194-O specifically (was applying the generic 20% instead
+of a documented 5% carve-out - see `DECISIONS.md` Entry 9), and the
+194-O threshold's entity-type scope (individual/HUF only) was true but
+previously unstated. The Income Tax Act 2025 → Section 393 citation
+change - the boldest, most checkable-but-easy-to-fabricate claim in the
+table - was independently confirmed real across three sources. The
+official incometaxindia.gov.in FAQ pages block automated fetches
+(403), so this is strong secondary-source corroboration, not primary
+government-document confirmation - stated plainly, not overclaimed.
 
 ## Limitations (honest, not hidden)
 

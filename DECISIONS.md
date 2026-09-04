@@ -334,3 +334,71 @@ at risk) - neither `PLATFORM_COMMISSION` nor `GATEWAY_FEE` nor
 batch, so this was a pure coverage fix with zero risk to the numbers
 already reported in the README and, by extension, in the demo video
 script.
+
+## Entry 9 — 2026-09-05 — the tax rates were finally checked, and one of them was wrong
+
+Every rate in `core/rules/registry.py` had carried a
+`verification_status = "UNVERIFIED - confirm against IT Dept before
+production use"` field since the day it was written - this was the
+single highest-severity open risk in the whole project by my own
+earlier assessment, and it stayed open the longest because it needed
+research, not code. Went through all nine rows in plan/baaki.md §7 one
+at a time, searching multiple independent sources per row and
+specifically looking for the exact number and effective date, not just
+the general topic (a search for "is 194J still 30,000" surfaces plenty
+of stale content confidently repeating the pre-Budget-2025 figure).
+
+**Two real problems, one of which was a live bug:**
+
+1. **The no-PAN override rate was wrong for one specific case.**
+   `NO_PAN_OVERRIDE_BPS` (20%) was applied uniformly to every deduction
+   kind when `pan_on_file=False`. Turns out s.206AA carries a specific
+   proviso, inserted by the Finance Act 2019 and effective 1 April
+   2020, that substitutes 5% in place of the generic 20% specifically
+   for payments under 194-O. A 194-O deduction computed without PAN was
+   overstating the deduction by 4x. Fixed with a dedicated
+   `NO_PAN_OVERRIDE_194O_BPS = 500` and a branch in `RuleSet.rule_for`
+   that checks the deduction kind before applying the override - the
+   same kind of "the exception to the rule is itself a rule" trap that
+   `TDS_ON_GST_INCLUSIVE` already exists to catch on the GST side.
+
+2. **The 194-O threshold description was true but incomplete.** The
+   ₹5,00,000 threshold only applies to individual/HUF participants who
+   furnish PAN/Aadhaar - a non-individual payee (a registered company
+   or LLP) has no threshold at all, TDS applies from the first rupee.
+   `Client` has no entity-type field, so the code has always applied
+   the individual/HUF threshold unconditionally - which happens to be
+   correct for this project's actual persona (a freelancer/sole
+   earner), but was an unstated assumption rather than a documented
+   scope decision. Fixed by documenting it explicitly in
+   `core/rules/registry.py` and in the plan; did not add an
+   entity-type field, since every other client in this project's data
+   model is implicitly an individual/HUF anyway and a real fix would
+   need a genuine feature (entity type on `Client`) with no batch data
+   to exercise it.
+
+**One claim that could easily have been a hallucination and wasn't:**
+the plan's boldest, least-obvious claim - that TDS provisions get
+recited under a brand-new "Section 393" starting 1 April 2026 - is the
+kind of specific, checkable-but-easy-to-fabricate detail that would be
+genuinely embarrassing to get wrong in front of a payments-literate
+reviewer. Checked it against three independent sources describing the
+same mechanism (a single umbrella section organised into six numbered
+tables, with a worked example translating "194C at 1%" into
+"s.393(1), Table Sl. No. 6(i), payment code 1017") - it's real. While
+checking it, found a related fact the original research had missed:
+s.206AA itself (the no-PAN override) is *also* being restructured,
+merging with s.206CC into a new s.397(2). Left unfixed - it only
+affects which citation string gets displayed for the no-PAN case,
+never the rate - but noted in the plan as a residual gap rather than
+silently ignored.
+
+**What I could not do:** incometaxindia.gov.in's own FAQ pages return
+403 on automated fetches, so true primary-source confirmation wasn't
+achievable for the statutory rows in the time available - every row
+above is corroborated by 2-3 independent secondary sources agreeing on
+the same number, effective date, and amending Act, which is
+meaningfully stronger evidence than the single-source cross-check this
+project shipped with originally, but it is still not the primary
+document itself. Said so plainly in plan/baaki.md rather than
+overstating the confidence level.
