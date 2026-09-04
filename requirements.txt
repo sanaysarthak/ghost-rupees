@@ -1,0 +1,7 @@
+# The deterministic core and CLI (`python cli.py generate` / `run`) need
+# NOTHING beyond the Python 3.11+ standard library - no install required.
+#
+# These are only needed for the optional LLM layer (llm/) and for tests:
+anthropic>=1.0.0
+pydantic>=2.0.0
+pytest>=8.0.0
