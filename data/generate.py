@@ -267,6 +267,39 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         raw_narration="UPI/CR/998878/NORTHWINDSTUDIOSLLP/ICIC/part2", utr="998878",
     ))
 
+    # Cross-client tie: two DIFFERENT clients each invoice the identical
+    # amount, credited within days of each other via generic UPI credits
+    # that carry no Razorpay identifiers and no matching UTR reference in
+    # either invoice - so stages 1 and 2 cannot resolve them, and amount +
+    # date alone (stage 3) cannot tell the two credits apart. Only the
+    # counterparty name embedded in each credit's raw narration can.
+    tie_a, tie_b = clients[2], clients[3]   # BluePeak Consulting, Fernhill Media
+    tie_amount = rupees_to_paisa("28750.00")
+    batch.invoices.append(Invoice(
+        invoice_id="INV-TIE-A", client_id=tie_a.client_id,
+        issue_date=date(2026, 8, 1), due_date=date(2026, 8, 16),
+        service_amount_paisa=tie_amount, gst_applicable=False,
+        deduction_kind=DeductionKind.NONE, notes="receipt:INV-TIE-A",
+    ))
+    batch.invoices.append(Invoice(
+        invoice_id="INV-TIE-B", client_id=tie_b.client_id,
+        issue_date=date(2026, 8, 2), due_date=date(2026, 8, 17),
+        service_amount_paisa=tie_amount, gst_applicable=False,
+        deduction_kind=DeductionKind.NONE, notes="receipt:INV-TIE-B",
+    ))
+    # deliberately appended out of client order (B's credit before A's) so
+    # a naive first-found pick resolves the tie WRONG without a hint.
+    batch.credits.append(Credit(
+        credit_id="CR-TIE-B", value_date=date(2026, 8, 11),
+        amount_paisa=tie_amount, rail=Rail.UPI,
+        raw_narration="UPI/CR/700011122244/FERNHILLMEDIA/ICIC/aug-fee", utr="700011122244",
+    ))
+    batch.credits.append(Credit(
+        credit_id="CR-TIE-A", value_date=date(2026, 8, 10),
+        amount_paisa=tie_amount, rail=Rail.UPI,
+        raw_narration="UPI/CR/700011122233/BLUEPEAKCONSULTING/HDFC/aug-fee", utr="700011122233",
+    ))
+
     batch.invoices.sort(key=lambda i: i.issue_date)
     return batch
 

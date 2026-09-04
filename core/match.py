@@ -98,14 +98,54 @@ def _within_window(invoice: Invoice, credit_date: date) -> bool:
     return invoice.issue_date <= credit_date <= (invoice.due_date + timedelta(days=MATCH_WINDOW_DAYS))
 
 
-def _stage3_hypothesis(invoice: Invoice, hyps: list[Hypothesis],
-                        pool: list[Credit]) -> tuple[Credit, Hypothesis] | None:
+def _name_tokens(s: str) -> set[str]:
+    return set(re.findall(r"[a-z]+", s.lower())) - {"the", "and", "co", "llp", "pvt", "ltd"}
+
+
+def _stage3_hypothesis(
+    invoice: Invoice, hyps: list[Hypothesis], pool: list[Credit], client_name: str = "",
+    narration_hint: dict[str, tuple[str | None, str | None]] | None = None,
+) -> tuple[Credit, Hypothesis] | None:
+    """
+    narration_hint: optional {credit_id: (parsed_counterparty, parsed_utr)},
+    built by the CALLER from llm.narration output and passed in as plain
+    tuples specifically so this module never imports llm/ - see the
+    module docstring and tests/test_import_boundary.py. When two or more
+    DISTINCT credits tie on predicted amount within the window (a genuine
+    cross-client collision, not just two hypotheses on the same credit),
+    a hint whose parsed counterparty name shares a token with the
+    invoice's client name resolves the tie correctly; without a hint,
+    the tie falls back to picking whichever credit was encountered
+    first.
+    """
     candidates = [c for c in pool if _within_window(invoice, c.value_date)]
+    matches: list[tuple[Credit, Hypothesis]] = []
     for c in candidates:
         for h in hyps:
             if int(c.amount_paisa) == int(h.predicted_net_paisa):
-                return c, h
-    return None
+                matches.append((c, h))
+    if not matches:
+        return None
+
+    seen_ids: set[str] = set()
+    distinct_credit_ids: list[str] = []
+    for c, _ in matches:
+        if c.credit_id not in seen_ids:
+            seen_ids.add(c.credit_id)
+            distinct_credit_ids.append(c.credit_id)
+    chosen_credit_id = distinct_credit_ids[0]
+
+    if len(distinct_credit_ids) > 1 and narration_hint and client_name:
+        client_tokens = _name_tokens(client_name)
+        name_matched_ids = [
+            cid for cid in distinct_credit_ids
+            if narration_hint.get(cid) and narration_hint[cid][0]
+            and _name_tokens(narration_hint[cid][0]) & client_tokens
+        ]
+        if len(name_matched_ids) == 1:
+            chosen_credit_id = name_matched_ids[0]
+
+    return next((c, h) for c, h in matches if c.credit_id == chosen_credit_id)
 
 
 def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
@@ -160,7 +200,8 @@ def _form26as_has(batch: Batch, tan: str | None, amount: Paisa, around: date) ->
     return None
 
 
-def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | None = None) -> Ledger:
+def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | None = None,
+                 narration_hint: dict[str, tuple[str | None, str | None]] | None = None) -> Ledger:
     utr_resolver = utr_resolver or (lambda _utr: None)
     ledger = Ledger()
 
@@ -210,7 +251,7 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
                 hyp = next((h for h in hyps if int(h.predicted_net_paisa) == int(credit.amount_paisa)), hyps[0])
 
         if credit is None:
-            found = _stage3_hypothesis(inv, hyps, available)
+            found = _stage3_hypothesis(inv, hyps, available, client.name, narration_hint)
             stage = "stage3_hypothesis"
             if found is not None:
                 credit, hyp = found

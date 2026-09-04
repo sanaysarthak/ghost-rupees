@@ -73,6 +73,49 @@ def test_a_credit_exception_exists_for_unmatched_money_in():
     assert ExceptionCode.DUPLICATE_CREDIT in codes
 
 
+def test_cross_client_tie_is_wrong_without_a_narration_hint():
+    """
+    Documents a real, dangerous defect class: two different clients
+    invoice the identical amount, paid by generic UPI credits with no
+    Razorpay identifiers and no UTR either invoice references. Amount+
+    date matching alone (stage 3) cannot tell them apart, and without
+    narration-derived counterparty names to break the tie, the matcher
+    picks whichever credit it encountered first - which is wrong here by
+    deliberate construction. Conservation still holds (the ledger
+    balances either way), which is exactly why this bug is dangerous: it
+    is invisible to Gate 1 and to the auto-match rate.
+    """
+    batch = generate_batch(seed=42, n_random=40)
+    ledger = run_matcher(batch)
+    ledger.assert_conserves(batch.invoices, gross_amount)
+
+    line_a = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-A" and l.proof)
+    line_b = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-B" and l.proof)
+    # deliberately asserting the WRONG outcome - this is what "no
+    # disambiguation available" actually produces today
+    assert line_a.proof.credit_id == "CR-TIE-B"
+    assert line_b.proof.credit_id == "CR-TIE-A"
+
+
+def test_narration_hint_resolves_the_cross_client_tie_correctly():
+    """The same scenario, given a hint shaped exactly like what
+    llm.narration.parse_narration_verified produces (credit_id ->
+    (counterparty, utr)) - the tie resolves to the correct credit for
+    both invoices."""
+    batch = generate_batch(seed=42, n_random=40)
+    hint = {
+        "CR-TIE-A": ("BluePeak Consulting", "700011122233"),
+        "CR-TIE-B": ("Fernhill Media", "700011122244"),
+    }
+    ledger = run_matcher(batch, narration_hint=hint)
+    ledger.assert_conserves(batch.invoices, gross_amount)
+
+    line_a = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-A" and l.proof)
+    line_b = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-B" and l.proof)
+    assert line_a.proof.credit_id == "CR-TIE-A"
+    assert line_b.proof.credit_id == "CR-TIE-B"
+
+
 def test_conservation_actually_catches_a_broken_engine():
     """Negative control: prove assert_conserves is not a tautology by
     feeding it a deliberately unbalanced ledger."""
