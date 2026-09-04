@@ -40,5 +40,26 @@
     "quarter": "Q2-FY26-27",
     "amount_paisa": 64000,
     "section": "s.393 Table Item (technical/call-centre fees)"
+  },
+  {
+    "entry_id": "26AS-0009",
+    "deductor_tan": "MUMB98765C",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 200000,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0011",
+    "deductor_tan": "DELB78901I",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 200000,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0012",
+    "deductor_tan": "PUNE34567F",
+    "quarter": "Q3-FY26-27",
+    "amount_paisa": 750000,
+    "section": "s.393 Table Item (professional fees)"
   }
 ]
