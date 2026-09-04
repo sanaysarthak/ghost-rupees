@@ -1,5 +1,5 @@
 """
-Runs the matcher against the 12-planted-defect holdout batch
+Runs the matcher against the 14-planted-defect holdout batch
 (data/holdout.py) and reports found / wrong-code / missed per defect,
 plus any false positives elsewhere in the batch. This is the eval the
 track's pass bar asks for: "throughput plus measured accuracy plus an
@@ -63,11 +63,12 @@ def run_defect_eval() -> None:
         if d.known_gap and result != "FOUND":
             print(f"      known gap: {d.known_gap}")
 
+    total = len(defects)
     print("-" * 100)
-    print(f"found: {found}/12   wrong-code: {wrong_code}/12   missed: {missed}/12   "
+    print(f"found: {found}/{total}   wrong-code: {wrong_code}/{total}   missed: {missed}/{total}   "
           f"(of which {known_gap_hit} are documented known gaps)")
 
-    # false positives: exceptions on records NOT among the 12 planted defects
+    # false positives: exceptions on records NOT among the planted defects
     all_defect_ids = set()
     for d in defects:
         all_defect_ids |= set((d.invoice_id or "").split(","))

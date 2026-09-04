@@ -1,15 +1,17 @@
 """
-The held-out eval batch: 12 explicitly-planted, individually-labelled
+The held-out eval batch: 14 explicitly-planted, individually-labelled
 defects with known ground truth, separate from the golden batch's
-random+designed mix (see plan/baaki.md §10). Unlike data/generate.py's
-index-driven anomaly cycle, every defect here is hand-built so its
-expected classification is exact and checkable - this is what
-eval/defects.py runs the matcher against and scores.
+random+designed mix (see plan/baaki.md §10 - the track brief's original
+12, plus OVER_PAID and GATEWAY_FEE_VARIANCE, added once those exception
+codes got real matcher support). Unlike data/generate.py's index-driven
+anomaly cycle, every defect here is hand-built so its expected
+classification is exact and checkable - this is what eval/defects.py
+runs the matcher against and scores.
 
-Two of the twelve are deliberately defects the current engine does NOT
-yet catch (FX_SPREAD_UNEXPLAINED, OVER_PAID) - see the DEFECTS table's
-`known_gap` field. Reporting them as honest misses, with the reason,
-is the point: "one cherry-picked match proves nothing" cuts both ways.
+One of the fourteen is a defect the current engine does NOT yet catch
+(FX_SPREAD_UNEXPLAINED) - see the DEFECTS table's `known_gap` field.
+Reporting it as an honest miss, with the reason, is the point: "one
+cherry-picked match proves nothing" cuts both ways.
 """
 
 from __future__ import annotations
@@ -38,8 +40,10 @@ class PlantedDefect:
 DEFECTS: list[PlantedDefect] = []   # populated by build_holdout_batch()
 
 
-def _client(cid: str, name: str, tan: str | None, pan: bool = True, commission_bps: int | None = None) -> Client:
-    return Client(client_id=cid, name=name, pan_on_file=pan, tan=tan, contracted_commission_bps=commission_bps)
+def _client(cid: str, name: str, tan: str | None, pan: bool = True,
+            commission_bps: int | None = None, mdr_bps: int | None = None) -> Client:
+    return Client(client_id=cid, name=name, pan_on_file=pan, tan=tan,
+                  contracted_commission_bps=commission_bps, contracted_mdr_bps=mdr_bps)
 
 
 def build_holdout_batch() -> tuple[Batch, list[PlantedDefect]]:
@@ -52,7 +56,8 @@ def build_holdout_batch() -> tuple[Batch, list[PlantedDefect]]:
     c4 = _client("cli_h04", "Loamfield Agro", "LOAM44444D")
     c5 = _client("cli_h05", "Quillon Media", "QLLN55555E")
     c6 = _client("cli_h06", "Restive Platforms Inc", "RSTV66666F", commission_bps=200)
-    batch.clients.extend([c1, c2, c3, c4, c5, c6])
+    c7 = _client("cli_h07", "Millbrook Gateway Services", "MLBK77777G", mdr_bps=180)
+    batch.clients.extend([c1, c2, c3, c4, c5, c6, c7])
 
     ruleset = resolve_ruleset(HOLDOUT_FY_DATE)
 
@@ -247,5 +252,42 @@ def build_holdout_batch() -> tuple[Batch, list[PlantedDefect]]:
                   "size (>Rs 500) currently falls outside the SHORT_PAY_MIN_FRACTION floor logic "
                   "path too, so this is an honest, expected miss until FX handling is built.",
     ))
+
+    # --- Defect 13: a customer pays more than invoiced - a duplicate
+    # transfer folded into the same credit, no lawful basis for the excess
+    base13 = rupees_to_paisa("45000.00")
+    batch.invoices.append(Invoice(
+        invoice_id="HOLD-13", client_id=c2.client_id, issue_date=date(2026, 5, 17),
+        due_date=date(2026, 6, 1), service_amount_paisa=base13, gst_applicable=False,
+        deduction_kind=DeductionKind.NONE, notes="receipt:HOLD-13",
+    ))
+    batch.credits.append(Credit(
+        credit_id="HCR-13", value_date=date(2026, 6, 5),
+        amount_paisa=Paisa(base13 + rupees_to_paisa("6000.00")), rail=Rail.UPI,
+        raw_narration="UPI/CR/810000000013/WINDMERESTUDIO/ICIC/overpay", utr="810000000013",
+    ))
+    defects.append(PlantedDefect(13, "Customer paid Rs 6,000 more than invoiced, no lawful basis",
+                                  "HOLD-13", "HCR-13", ExceptionCode.OVER_PAID))
+
+    # --- Defect 14: gateway (MDR) fee charged above the contracted rate card
+    from core.compose import gross_amount as _gross14
+    base14 = rupees_to_paisa("25000.00")
+    inv14 = Invoice(
+        invoice_id="HOLD-14", client_id=c7.client_id, issue_date=date(2026, 5, 18),
+        due_date=date(2026, 6, 2), service_amount_paisa=base14, gst_applicable=False,
+        deduction_kind=DeductionKind.GATEWAY_FEE, notes="receipt:HOLD-14",
+    )
+    batch.invoices.append(inv14)
+    over_mdr_bps = c7.contracted_mdr_bps + 50   # matches compose.py's over-charge model exactly
+    mdr_over = apply_bps(base14, over_mdr_bps)
+    gst_on_mdr_over = apply_bps(mdr_over, 1800)
+    ded14 = Paisa(mdr_over + gst_on_mdr_over)
+    batch.credits.append(Credit(
+        credit_id="HCR-14", value_date=date(2026, 6, 6),
+        amount_paisa=Paisa(_gross14(inv14) - ded14), rail=Rail.UPI,
+        raw_narration="UPI/CR/810000000014/MILLBROOKGATEWAYSERVICES/HDFC/x", utr="810000000014",
+    ))
+    defects.append(PlantedDefect(14, "Gateway MDR charged above the contracted rate card",
+                                  "HOLD-14", "HCR-14", ExceptionCode.GATEWAY_FEE_VARIANCE))
 
     return batch, defects
