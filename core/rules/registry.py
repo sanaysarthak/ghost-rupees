@@ -1,14 +1,16 @@
 """
 FY-versioned tax/deduction rule tables.
 
-*** VERIFY EVERY RATE BELOW AGAINST THE INCOME TAX DEPARTMENT'S OWN ***
-*** MATERIAL BEFORE RELYING ON THIS IN ANYTHING REAL. ***
-
-These are taken from secondary tax-advisory sources current as of
-August 2026 (see plan/baaki.md §7 and §20 for the source list) and
-cross-checked across several, but not against the primary IT Department
-publication. Every Rule below carries a `citation` field precisely so
-this can be checked and updated in one place.
+Re-verified 5 September 2026 against multiple independent secondary
+sources per row (see plan/baaki.md §7's Verification log) - the
+official incometaxindia.gov.in FAQ pages block automated fetches
+(403), so this is strong multi-source corroboration, not primary
+government-document confirmation. Two real issues were found and fixed
+in this pass: the 194-O no-PAN rate was wrong (see
+NO_PAN_OVERRIDE_194O_BPS below), and the 194-O threshold's entity-type
+scope was true but previously unstated (see the comment on that rule).
+Every Rule below carries a `citation` field precisely so any future
+correction can be made in one place.
 
 Two things this registry exists to get right, on purpose:
 
@@ -48,7 +50,10 @@ class Rule:
     threshold_paisa: Paisa
     base: DeductionBase
     legacy_citation: str
-    verification_status: str = "UNVERIFIED - confirm against IT Dept before production use"
+    verification_status: str = (
+        "Re-verified 5 Sep 2026 against multiple secondary sources (see plan/baaki.md §7); "
+        "not confirmed against the primary incometaxindia.gov.in document itself (403 on automated fetch)"
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,15 +124,32 @@ _RATES: dict[DeductionKind, dict[str, object]] = {
         legacy="194H", s393="s.393 Table Item (commission/brokerage)",
     ),
     DeductionKind.TDS_ECOMMERCE_194O: dict(
+        # SCOPE LIMITATION: the Rs 5,00,000 threshold applies only to
+        # individual/HUF participants furnishing PAN or Aadhaar - this
+        # tool's target persona (a freelancer/sole earner) - and there is
+        # NO threshold at all for non-individual/HUF participants (a
+        # registered company or LLP payee owes 194-O TDS from the first
+        # rupee). Client carries no entity-type field, so this rule
+        # always applies the individual/HUF threshold; a company/LLP
+        # payee is out of scope. See plan/baaki.md §20.
         rate_bps=BasisPoints(10),                        # 0.10%
-        threshold_paisa=Paisa(5_00_000 * 100),           # Rs 5,00,000 aggregate/FY
+        threshold_paisa=Paisa(5_00_000 * 100),           # Rs 5,00,000 aggregate/FY, individual/HUF only
         base=DeductionBase.EXCLUSIVE_OF_GST,
         legacy="194-O", s393="s.393 Table Item (e-commerce operator payments)",
     ),
 }
 
-# No-PAN override (s.206AA / successor): 20% flat, overrides the section rate.
+# No-PAN override (s.206AA / successor s.397(2) under the Income-tax Act,
+# 2025): 20% flat, overrides the section rate - EXCEPT for 194-O, where
+# a specific proviso (inserted by the Finance Act 2019, clause (iii) of
+# s.206AA, effective 1 Apr 2020) substitutes 5% in place of 20%. Applying
+# the generic 20% to a 194-O no-PAN case would overstate the deduction by
+# 4x. Verified against two independent secondary sources describing the
+# exact statutory mechanism; the primary incometaxindia.gov.in FAQ on the
+# analogous 194Q no-PAN rate blocks automated fetches (403) but corroborates
+# the same 5%-not-20% substitution. See plan/baaki.md §7/§20.
 NO_PAN_OVERRIDE_BPS = BasisPoints(2000)
+NO_PAN_OVERRIDE_194O_BPS = BasisPoints(500)
 
 # GST
 GST_DOMESTIC_BPS = BasisPoints(1800)     # 18.00%, domestic services
@@ -149,7 +171,10 @@ class RuleSet:
             return None
         rate_bps = spec["rate_bps"]
         if not pan_on_file:
-            rate_bps = NO_PAN_OVERRIDE_BPS
+            rate_bps = (
+                NO_PAN_OVERRIDE_194O_BPS if kind == DeductionKind.TDS_ECOMMERCE_194O
+                else NO_PAN_OVERRIDE_BPS
+            )
         return Rule(
             code=kind,
             rate_bps=rate_bps,

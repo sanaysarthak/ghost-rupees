@@ -1,7 +1,7 @@
 from datetime import date
 
 from core.models import DeductionKind
-from core.rules.registry import NO_PAN_OVERRIDE_BPS, resolve
+from core.rules.registry import NO_PAN_OVERRIDE_194O_BPS, NO_PAN_OVERRIDE_BPS, resolve
 
 
 def test_194j_professional_rate_and_threshold():
@@ -29,6 +29,19 @@ def test_194o_rate_and_threshold():
     rule = rs.rule_for(DeductionKind.TDS_ECOMMERCE_194O, pan_on_file=True)
     assert rule.rate_bps == 10               # 0.1%
     assert rule.threshold_paisa == 5_00_000 * 100
+
+
+def test_194o_no_pan_rate_is_5_percent_not_20_percent():
+    """
+    s.206AA carries a specific proviso for 194-O (inserted by the Finance
+    Act 2019, effective 1 Apr 2020) substituting 5% in place of the
+    generic 20% no-PAN rate. Applying the generic rate here would
+    overstate a real freelancer's deduction by 4x. See DECISIONS.md.
+    """
+    rs = resolve(date(2026, 6, 1))
+    rule = rs.rule_for(DeductionKind.TDS_ECOMMERCE_194O, pan_on_file=False)
+    assert rule.rate_bps == NO_PAN_OVERRIDE_194O_BPS
+    assert rule.rate_bps == 500               # 5%, not the generic 2000 (20%)
 
 
 def test_financial_year_citation_scheme_changes_at_boundary():
