@@ -134,3 +134,43 @@ def test_platform_commission_with_no_contracted_rate_yields_no_deduction_hypothe
     ruleset = resolve_ruleset(inv.issue_date)
     hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
     assert list(hyps.keys()) == ["no_deduction"]
+
+
+def test_gateway_fee_uses_contracted_mdr_plus_gst_on_the_fee():
+    """
+    Rs 20,000 base, MDR contracted at 2%: fee = 400.00, GST on the fee
+    (18%) = 72.00, total deduction = 472.00. See plan/baaki.md §7:
+    "Razorpay MDR ... Plus 18% GST on the fee itself."
+    """
+    from core.classify import ExceptionCode
+
+    client = Client(client_id="cli_gateway", name="Some Gateway Client",
+                     pan_on_file=True, tan=None, contracted_mdr_bps=200)  # 2%
+    inv = Invoice(
+        invoice_id="INV-GATE-01", client_id="cli_gateway",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("20000.00"), gst_applicable=False,
+        deduction_kind=DeductionKind.GATEWAY_FEE,
+    )
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+
+    assert hyps["lawful_correct"].deduction_amount_paisa == rupees_to_paisa("472.00")
+    assert hyps["lawful_correct"].lawful is True
+    assert hyps["gateway_fee_above_rate_card"].exception_if_matched == ExceptionCode.GATEWAY_FEE_VARIANCE
+    # 2.5% MDR (200 + 50 bps) = 500.00, GST on fee (18%) = 90.00, total 590.00
+    assert hyps["gateway_fee_above_rate_card"].deduction_amount_paisa == rupees_to_paisa("590.00")
+
+
+def test_gateway_fee_with_no_contracted_rate_yields_no_deduction_hypothesis():
+    client = Client(client_id="cli_nogate", name="No Rate Card Client",
+                     pan_on_file=True, tan=None, contracted_mdr_bps=None)
+    inv = Invoice(
+        invoice_id="INV-GATE-02", client_id="cli_nogate",
+        issue_date=date(2026, 6, 4), due_date=date(2026, 6, 19),
+        service_amount_paisa=rupees_to_paisa("20000.00"), gst_applicable=False,
+        deduction_kind=DeductionKind.GATEWAY_FEE,
+    )
+    ruleset = resolve_ruleset(inv.issue_date)
+    hyps = {h.label: h for h in hypotheses_for_invoice(inv, ruleset, client)}
+    assert list(hyps.keys()) == ["no_deduction"]

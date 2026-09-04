@@ -42,6 +42,7 @@ class Client:
     pan_on_file: bool = True
     tan: str | None = None            # deductor's TAN, for 26AS cross-check
     contracted_commission_bps: int | None = None  # for platform clients
+    contracted_mdr_bps: int | None = None          # for gateway/payment-aggregator clients
 
 
 @dataclass(frozen=True, slots=True)

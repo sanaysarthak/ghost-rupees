@@ -98,6 +98,38 @@ def hypotheses_for_invoice(invoice: Invoice, ruleset: RuleSet, client: Client,
         ))
         return hyps
 
+    if kind == DeductionKind.GATEWAY_FEE:
+        # Also not a statutory rate - the gateway's MDR is set by the
+        # merchant's own rate card (Client.contracted_mdr_bps), and GST
+        # applies to the fee itself (see plan/baaki.md §7: "Razorpay MDR
+        # ... Plus 18% GST on the fee itself") - no Form 26AS concept
+        # here either.
+        if client.contracted_mdr_bps is None:
+            return hyps
+        correct_mdr_bps = client.contracted_mdr_bps
+        mdr_correct = apply_bps(base, correct_mdr_bps)
+        gst_on_mdr_correct = apply_bps(mdr_correct, GST_DOMESTIC_BPS)
+        ded_correct = Paisa(mdr_correct + gst_on_mdr_correct)
+        hyps.append(Hypothesis(
+            label="lawful_correct", predicted_net_paisa=Paisa(gross - ded_correct),
+            deduction_kind=kind, deduction_amount_paisa=ded_correct, lawful=True,
+            exception_if_matched=None,
+            explanation=f"Gateway fee at the contracted {correct_mdr_bps/100:.2f}% MDR "
+                        f"plus 18% GST on the fee.",
+        ))
+        over_mdr_bps = correct_mdr_bps + 50   # a plausible over-charge to model
+        mdr_over = apply_bps(base, over_mdr_bps)
+        gst_on_mdr_over = apply_bps(mdr_over, GST_DOMESTIC_BPS)
+        ded_over = Paisa(mdr_over + gst_on_mdr_over)
+        hyps.append(Hypothesis(
+            label="gateway_fee_above_rate_card", predicted_net_paisa=Paisa(gross - ded_over),
+            deduction_kind=kind, deduction_amount_paisa=ded_over, lawful=False,
+            exception_if_matched=ExceptionCode.GATEWAY_FEE_VARIANCE,
+            explanation=f"MDR charged at {over_mdr_bps/100:.2f}%, above the contracted "
+                        f"{correct_mdr_bps/100:.2f}% rate card (both plus 18% GST on the fee).",
+        ))
+        return hyps
+
     rule = ruleset.rule_for(kind, pan_on_file=client.pan_on_file)
     if rule is None:
         return hyps
