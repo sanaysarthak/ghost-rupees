@@ -195,10 +195,26 @@ def _book_short_paid(ledger: Ledger, inv: Invoice, credit: Credit) -> None:
     ))
 
 
+def _compact(s: str) -> str:
+    return re.sub(r"[^a-z]", "", s.lower())
+
+
 def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
-                   pool: list[Credit]) -> tuple[list[Credit], Hypothesis] | None:
-    """One invoice settled across up to MAX_SET_SIZE credits."""
-    candidates = [c for c in pool if _within_window(invoice, c.value_date)]
+                   pool: list[Credit], client_name: str = "") -> tuple[list[Credit], Hypothesis] | None:
+    """
+    One invoice settled across up to MAX_SET_SIZE credits. Scoped to
+    credits whose narration names this client - unscoped subset-sum over
+    an entire multi-client credit pool WILL eventually find a spurious
+    combination that happens to sum correctly (confirmed empirically on
+    the 12-defect holdout batch: it found a 3-credit "match" built from
+    three different clients' unrelated payments). See DECISIONS.md.
+    """
+    compact_client = _compact(client_name) if client_name else ""
+    candidates = [
+        c for c in pool
+        if _within_window(invoice, c.value_date)
+        and (not compact_client or compact_client in _compact(c.raw_narration))
+    ]
     for size in range(2, MAX_SET_SIZE + 1):
         for combo in itertools.combinations(candidates, size):
             total = sum(int(c.amount_paisa) for c in combo)
@@ -209,8 +225,14 @@ def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
 
 
 def _stage4_merge(invoice_group: list[Invoice], batch: Batch,
-                   pool: list[Credit]) -> tuple[Credit, dict[str, Hypothesis]] | None:
-    """One credit covering up to MAX_SET_SIZE invoices for the same client."""
+                   pool: list[Credit], client_name: str = "") -> tuple[Credit, dict[str, Hypothesis]] | None:
+    """One credit covering up to MAX_SET_SIZE invoices for the same client.
+    Same narration-scoping rationale as _stage4_split."""
+    compact_client = _compact(client_name) if client_name else ""
+    scoped_pool = [
+        c for c in pool
+        if not compact_client or compact_client in _compact(c.raw_narration)
+    ]
     for size in range(2, MAX_SET_SIZE + 1):
         for combo in itertools.combinations(invoice_group, size):
             per_invoice_hyps = {}
@@ -220,21 +242,28 @@ def _stage4_merge(invoice_group: list[Invoice], batch: Batch,
                 per_invoice_hyps[inv.invoice_id] = hypotheses_for_invoice(
                     inv, inv_ruleset, batch.client(inv.client_id), prior_base_paisa_this_fy=prior
                 )
-            correct = {}
+            chosen = {}
             total = 0
             ok = True
             for inv in combo:
-                lawful = next((h for h in per_invoice_hyps[inv.invoice_id] if h.label == "lawful_correct"), None)
-                if lawful is None:
+                # prefer "lawful_correct" (a statutory/contracted deduction
+                # applies); fall back to "no_deduction" for invoices with no
+                # deduction_kind at all - both are lawful, deterministic,
+                # single-valued hypotheses, so either is a safe merge target.
+                target = next(
+                    (h for h in per_invoice_hyps[inv.invoice_id] if h.label == "lawful_correct"),
+                    next((h for h in per_invoice_hyps[inv.invoice_id] if h.label == "no_deduction"), None),
+                )
+                if target is None:
                     ok = False
                     break
-                correct[inv.invoice_id] = lawful
-                total += int(lawful.predicted_net_paisa)
+                chosen[inv.invoice_id] = target
+                total += int(target.predicted_net_paisa)
             if not ok:
                 continue
-            for c in pool:
+            for c in scoped_pool:
                 if any(_within_window(inv, c.value_date) for inv in combo) and int(c.amount_paisa) == total:
-                    return c, correct
+                    return c, chosen
     return None
 
 
@@ -323,7 +352,7 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
         prior = _prior_base_paisa_this_fy(batch, inv.client_id, ruleset.fy, inv.issue_date)
         hyps = hypotheses_for_invoice(inv, ruleset, client, prior_base_paisa_this_fy=prior)
         available = [c for c in pool if c.credit_id not in consumed]
-        found = _stage4_split(inv, hyps, available)
+        found = _stage4_split(inv, hyps, available, client.name)
         if found is not None:
             credits, hyp = found
             for c in credits:
@@ -341,7 +370,8 @@ def run_matcher(batch: Batch, *, utr_resolver: Callable[[str], str | None] | Non
     merged_invoice_ids: set[str] = set()
     for client_id, invs in by_client.items():
         available = [c for c in pool if c.credit_id not in consumed]
-        found = _stage4_merge(invs, batch, available)
+        merge_client_name = batch.client(client_id).name
+        found = _stage4_merge(invs, batch, available, merge_client_name)
         if found is not None:
             credit, per_invoice_hyp = found
             consumed.add(credit.credit_id)
