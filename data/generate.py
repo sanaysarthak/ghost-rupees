@@ -300,6 +300,36 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         raw_narration="UPI/CR/700011122233/BLUEPEAKCONSULTING/HDFC/aug-fee", utr="700011122233",
     ))
 
+    # Second tie, GARBLED names this time - the substring check we just
+    # added solves the clean-name pair above for free, so it's useless as
+    # an ablation. This one abbreviates the counterparty name the way real
+    # bank narrations often do under a character budget ("BLUPEAK CNSLTNG"
+    # for "BluePeak Consulting"), which the substring check can't see
+    # through but a language model should be able to.
+    tie_amount2 = rupees_to_paisa("33400.00")
+    batch.invoices.append(Invoice(
+        invoice_id="INV-TIE-C", client_id=tie_a.client_id,
+        issue_date=date(2026, 9, 1), due_date=date(2026, 9, 16),
+        service_amount_paisa=tie_amount2, gst_applicable=False,
+        deduction_kind=DeductionKind.NONE, notes="receipt:INV-TIE-C",
+    ))
+    batch.invoices.append(Invoice(
+        invoice_id="INV-TIE-D", client_id=tie_b.client_id,
+        issue_date=date(2026, 9, 2), due_date=date(2026, 9, 17),
+        service_amount_paisa=tie_amount2, gst_applicable=False,
+        deduction_kind=DeductionKind.NONE, notes="receipt:INV-TIE-D",
+    ))
+    batch.credits.append(Credit(
+        credit_id="CR-TIE-D", value_date=date(2026, 9, 11),
+        amount_paisa=tie_amount2, rail=Rail.UPI,
+        raw_narration="UPI/CR/700099911133/FRNHL MEDIA/ICIC/sep-fee", utr="700099911133",
+    ))
+    batch.credits.append(Credit(
+        credit_id="CR-TIE-C", value_date=date(2026, 9, 10),
+        amount_paisa=tie_amount2, rail=Rail.UPI,
+        raw_narration="UPI/CR/700099911122/BLUPEAK CNSLTNG/HDFC/sep-fee", utr="700099911122",
+    ))
+
     batch.invoices.sort(key=lambda i: i.issue_date)
     return batch
 

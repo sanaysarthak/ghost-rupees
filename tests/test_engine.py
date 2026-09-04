@@ -114,6 +114,43 @@ def test_narration_hint_resolves_the_cross_client_tie_correctly():
     assert line_b.proof.credit_id == "CR-TIE-B"
 
 
+def test_garbled_name_tie_is_wrong_without_llm_help():
+    """
+    INV-TIE-C/D: the real ablation scenario now, since the clean-name
+    pair got solved for free. The narration abbreviates the counterparty
+    name ("BLUPEAK CNSLTNG", "FRNHL MEDIA") the way real bank narrations
+    often do - not a substring of the full client name, so tier 1 can't
+    resolve it. Without any hint it falls through to picking whichever
+    credit was found first, and comes out wrong.
+    """
+    batch = generate_batch(seed=42, n_random=40)
+    ledger = run_matcher(batch)
+    ledger.assert_conserves(batch.invoices, gross_amount)
+
+    line_c = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-C" and l.proof)
+    line_d = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-D" and l.proof)
+    assert line_c.proof.credit_id == "CR-TIE-D"
+    assert line_d.proof.credit_id == "CR-TIE-C"
+
+
+def test_narration_hint_resolves_a_tie_the_substring_check_cannot():
+    """The same garbled-name scenario, given a hint shaped exactly like
+    what llm.narration.parse_narration_verified produces - simulating an
+    LLM correctly expanding the abbreviation."""
+    batch = generate_batch(seed=42, n_random=40)
+    hint = {
+        "CR-TIE-C": ("BluePeak Consulting", "700099911122"),
+        "CR-TIE-D": ("Fernhill Media", "700099911133"),
+    }
+    ledger = run_matcher(batch, narration_hint=hint)
+    ledger.assert_conserves(batch.invoices, gross_amount)
+
+    line_c = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-C" and l.proof)
+    line_d = next(l for l in ledger.lines if l.invoice_id == "INV-TIE-D" and l.proof)
+    assert line_c.proof.credit_id == "CR-TIE-C"
+    assert line_d.proof.credit_id == "CR-TIE-D"
+
+
 def test_short_paid_is_recognised_not_swallowed_as_unmatched():
     """
     A partial payment with no lawful deduction basis must be recognised

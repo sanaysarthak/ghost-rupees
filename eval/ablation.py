@@ -1,8 +1,20 @@
 """
 The ablation study: run the matcher with the LLM narration parser OFF
 (the dumb digit-only stub) versus ON (a real Claude call per credit),
-and report the difference in outcome on the deliberately-planted
-cross-client tie (INV-TIE-A / INV-TIE-B in data/generate.py).
+and report the difference on the deliberately-planted GARBLED-name
+cross-client tie (INV-TIE-C / INV-TIE-D in data/generate.py).
+
+Why the garbled pair, not the clean-name pair (INV-TIE-A/B): an
+earlier version of this scenario used narrations that spelled the
+counterparty name out in full, and it turned out core.match's own
+free, deterministic substring check (tier 1 of _stage3_hypothesis's
+tie-break) already resolves that case with no model involved at all -
+which would have made this "ablation" prove nothing about the LLM.
+INV-TIE-C/D abbreviates the name the way real bank narrations often
+do ("BLUPEAK CNSLTNG" for "BluePeak Consulting"), which defeats the
+substring check but is exactly the kind of thing a language model can
+still recognise. See DECISIONS.md Entry 7 and
+tests/test_engine.py::test_garbled_name_tie_is_wrong_without_llm_help.
 
 This is the orchestration layer - the one place allowed to import BOTH
 core/ and llm/ - core/match.py itself never imports llm/ (see
@@ -54,30 +66,30 @@ def _build_hint_live(batch) -> dict[str, tuple[str | None, str | None]]:
 
 
 def _tie_outcome(ledger) -> tuple[str | None, str | None]:
-    line_a = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-A" and l.proof), None)
-    line_b = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-B" and l.proof), None)
-    return (line_a.proof.credit_id if line_a else None, line_b.proof.credit_id if line_b else None)
+    line_c = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-C" and l.proof), None)
+    line_d = next((l for l in ledger.lines if l.invoice_id == "INV-TIE-D" and l.proof), None)
+    return (line_c.proof.credit_id if line_c else None, line_d.proof.credit_id if line_d else None)
 
 
 def run_ablation(live: bool = False) -> None:
     batch = generate_batch(seed=42, n_random=40)
 
-    print("=== OFF: no narration hint at all ===")
+    print("=== OFF: no narration hint at all (tier 1's free substring check still runs) ===")
     ledger_off = run_matcher(batch)
     ledger_off.assert_conserves(batch.invoices, gross_amount)
-    a_off, b_off = _tie_outcome(ledger_off)
+    c_off, d_off = _tie_outcome(ledger_off)
     print(f"  auto-match rate: {ledger_off.auto_match_rate_pct(batch.invoices):.2f}%")
-    print(f"  INV-TIE-A -> {a_off}   INV-TIE-B -> {b_off}")
-    print(f"  correct? {a_off == 'CR-TIE-A' and b_off == 'CR-TIE-B'}")
+    print(f"  INV-TIE-C -> {c_off}   INV-TIE-D -> {d_off}")
+    print(f"  correct? {c_off == 'CR-TIE-C' and d_off == 'CR-TIE-D'}")
 
     print("\n=== STUB: digit-only baseline (the ablation's 'off' condition) ===")
     hint_stub = _build_hint_stub(batch)
     ledger_stub = run_matcher(batch, narration_hint=hint_stub)
     ledger_stub.assert_conserves(batch.invoices, gross_amount)
-    a_stub, b_stub = _tie_outcome(ledger_stub)
+    c_stub, d_stub = _tie_outcome(ledger_stub)
     print(f"  auto-match rate: {ledger_stub.auto_match_rate_pct(batch.invoices):.2f}%")
-    print(f"  INV-TIE-A -> {a_stub}   INV-TIE-B -> {b_stub}")
-    print(f"  correct? {a_stub == 'CR-TIE-A' and b_stub == 'CR-TIE-B'}")
+    print(f"  INV-TIE-C -> {c_stub}   INV-TIE-D -> {d_stub}")
+    print(f"  correct? {c_stub == 'CR-TIE-C' and d_stub == 'CR-TIE-D'}")
 
     if live:
         print("\n=== ON: real Claude narration parser ===")
@@ -88,10 +100,10 @@ def run_ablation(live: bool = False) -> None:
             return
         ledger_on = run_matcher(batch, narration_hint=hint_live)
         ledger_on.assert_conserves(batch.invoices, gross_amount)
-        a_on, b_on = _tie_outcome(ledger_on)
+        c_on, d_on = _tie_outcome(ledger_on)
         print(f"  auto-match rate: {ledger_on.auto_match_rate_pct(batch.invoices):.2f}%")
-        print(f"  INV-TIE-A -> {a_on}   INV-TIE-B -> {b_on}")
-        print(f"  correct? {a_on == 'CR-TIE-A' and b_on == 'CR-TIE-B'}")
+        print(f"  INV-TIE-C -> {c_on}   INV-TIE-D -> {d_on}")
+        print(f"  correct? {c_on == 'CR-TIE-C' and d_on == 'CR-TIE-D'}")
     else:
         print("\n(pass --live to also run the real Claude call - needs ANTHROPIC_API_KEY)")
 
