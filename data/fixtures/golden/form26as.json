@@ -1,65 +1,93 @@
 [
   {
     "entry_id": "26AS-0001",
+    "deductor_tan": "MUMC89012J",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 713010,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0002",
     "deductor_tan": "HYDA56789G",
     "quarter": "Q1-FY26-27",
-    "amount_paisa": 64000,
+    "amount_paisa": 134930,
     "section": "s.393 Table Item (technical/call-centre fees)"
   },
   {
-    "entry_id": "26AS-0003",
+    "entry_id": "26AS-extra-0003",
+    "deductor_tan": "BLRC90123K",
+    "quarter": "Q1-FY26-27",
+    "amount_paisa": 745890,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0004",
+    "deductor_tan": "DELB78901I",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 634920,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0005",
     "deductor_tan": "DELB78901I",
     "quarter": "Q1-FY26-27",
-    "amount_paisa": 30000,
+    "amount_paisa": 64238,
     "section": "s.393 Table Item (technical/call-centre fees)"
   },
   {
-    "entry_id": "26AS-extra-0004",
+    "entry_id": "26AS-extra-0006",
     "deductor_tan": "CHEA23456E",
     "quarter": "Q1-FY26-27",
-    "amount_paisa": 120000,
+    "amount_paisa": 165070,
     "section": "s.393 Table Item (technical/call-centre fees)"
   },
   {
-    "entry_id": "26AS-extra-0005",
+    "entry_id": "26AS-extra-0007",
     "deductor_tan": "DELA12345B",
     "quarter": "Q3-FY26-27",
-    "amount_paisa": 600000,
+    "amount_paisa": 839050,
     "section": "s.393 Table Item (professional fees)"
   },
   {
-    "entry_id": "26AS-0006",
+    "entry_id": "26AS-0008",
     "deductor_tan": "HYDA56789G",
     "quarter": "Q3-FY26-27",
-    "amount_paisa": 600000,
+    "amount_paisa": 817130,
     "section": "s.393 Table Item (professional fees)"
-  },
-  {
-    "entry_id": "26AS-0007",
-    "deductor_tan": "CHEA23456E",
-    "quarter": "Q2-FY26-27",
-    "amount_paisa": 64000,
-    "section": "s.393 Table Item (technical/call-centre fees)"
   },
   {
     "entry_id": "26AS-0009",
-    "deductor_tan": "MUMB98765C",
+    "deductor_tan": "CHEA23456E",
     "quarter": "Q2-FY26-27",
-    "amount_paisa": 200000,
-    "section": "s.393 Table Item (professional fees)"
+    "amount_paisa": 135204,
+    "section": "s.393 Table Item (technical/call-centre fees)"
   },
   {
     "entry_id": "26AS-0011",
-    "deductor_tan": "DELB78901I",
+    "deductor_tan": "MUMB98765C",
     "quarter": "Q2-FY26-27",
-    "amount_paisa": 200000,
+    "amount_paisa": 499290,
     "section": "s.393 Table Item (professional fees)"
   },
   {
-    "entry_id": "26AS-0012",
+    "entry_id": "26AS-extra-0012",
+    "deductor_tan": "CHEA23456E",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 149178,
+    "section": "s.393 Table Item (technical/call-centre fees)"
+  },
+  {
+    "entry_id": "26AS-0013",
+    "deductor_tan": "DELB78901I",
+    "quarter": "Q2-FY26-27",
+    "amount_paisa": 429420,
+    "section": "s.393 Table Item (professional fees)"
+  },
+  {
+    "entry_id": "26AS-0014",
     "deductor_tan": "PUNE34567F",
     "quarter": "Q3-FY26-27",
-    "amount_paisa": 750000,
+    "amount_paisa": 914400,
     "section": "s.393 Table Item (professional fees)"
   }
 ]

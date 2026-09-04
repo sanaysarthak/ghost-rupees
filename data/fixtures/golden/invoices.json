@@ -4,7 +4,7 @@
     "client_id": "cli_marrowin",
     "issue_date": "2026-04-04",
     "due_date": "2026-05-04",
-    "service_amount_paisa": 2000000,
+    "service_amount_paisa": 4828500,
     "gst_applicable": false,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-050"
@@ -14,7 +14,7 @@
     "client_id": "cli_tidewate",
     "issue_date": "2026-04-05",
     "due_date": "2026-05-20",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 8417900,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-029"
@@ -24,7 +24,7 @@
     "client_id": "cli_marrowin",
     "issue_date": "2026-04-10",
     "due_date": "2026-04-25",
-    "service_amount_paisa": 2500000,
+    "service_amount_paisa": 5732700,
     "gst_applicable": false,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-014"
@@ -34,7 +34,7 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-04-11",
     "due_date": "2026-05-26",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 2787200,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-054"
@@ -44,7 +44,7 @@
     "client_id": "cli_northwin",
     "issue_date": "2026-04-13",
     "due_date": "2026-05-28",
-    "service_amount_paisa": 2000000,
+    "service_amount_paisa": 4499700,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-001"
@@ -54,27 +54,17 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2026-04-17",
     "due_date": "2026-05-02",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 1951500,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-002"
-  },
-  {
-    "invoice_id": "INV-008",
-    "client_id": "cli_fernhill",
-    "issue_date": "2026-04-17",
-    "due_date": "2026-05-17",
-    "service_amount_paisa": 3200000,
-    "gst_applicable": true,
-    "deduction_kind": "TDS_PROFESSIONAL_194J",
-    "notes": "receipt:INV-008"
   },
   {
     "invoice_id": "INV-026",
     "client_id": "cli_copperli",
     "issue_date": "2026-04-21",
     "due_date": "2026-06-05",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 1787100,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-026"
@@ -84,7 +74,7 @@
     "client_id": "cli_marrowin",
     "issue_date": "2026-04-28",
     "due_date": "2026-06-12",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 2020000,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-020"
@@ -94,7 +84,7 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-04-30",
     "due_date": "2026-06-14",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 8253500,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-024"
@@ -104,7 +94,7 @@
     "client_id": "cli_bluepeak",
     "issue_date": "2026-05-06",
     "due_date": "2026-06-20",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 1595300,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-025"
@@ -114,7 +104,7 @@
     "client_id": "cli_solacede",
     "issue_date": "2026-05-07",
     "due_date": "2026-06-21",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 3979100,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-018"
@@ -124,17 +114,27 @@
     "client_id": "cli_copperli",
     "issue_date": "2026-05-08",
     "due_date": "2026-06-07",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6458800,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-044"
+  },
+  {
+    "invoice_id": "INV-006",
+    "client_id": "cli_kestrela",
+    "issue_date": "2026-05-11",
+    "due_date": "2026-05-26",
+    "service_amount_paisa": 2061100,
+    "gst_applicable": true,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-006"
   },
   {
     "invoice_id": "INV-015",
     "client_id": "cli_copperli",
     "issue_date": "2026-05-11",
     "due_date": "2026-05-26",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7458900,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-015"
@@ -144,7 +144,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-05-18",
     "due_date": "2026-06-02",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 2979000,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-022"
@@ -154,7 +154,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-05-26",
     "due_date": "2026-07-10",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6732800,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-038"
@@ -164,7 +164,7 @@
     "client_id": "cli_solacede",
     "issue_date": "2026-05-28",
     "due_date": "2026-06-27",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6746500,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-012"
@@ -174,7 +174,7 @@
     "client_id": "cli_kestrela",
     "issue_date": "2026-06-01",
     "due_date": "2026-07-16",
-    "service_amount_paisa": 800000,
+    "service_amount_paisa": 1225400,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-057"
@@ -184,7 +184,7 @@
     "client_id": "cli_solacede",
     "issue_date": "2026-06-03",
     "due_date": "2026-07-18",
-    "service_amount_paisa": 2000000,
+    "service_amount_paisa": 4855900,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-040"
@@ -200,41 +200,21 @@
     "notes": "receipt:INV-GHOST-01"
   },
   {
-    "invoice_id": "INV-009",
-    "client_id": "cli_kestrela",
-    "issue_date": "2026-06-11",
-    "due_date": "2026-06-26",
-    "service_amount_paisa": 6000000,
-    "gst_applicable": true,
-    "deduction_kind": "NONE",
-    "notes": "receipt:INV-009"
-  },
-  {
     "invoice_id": "INV-021",
     "client_id": "cli_marrowin",
     "issue_date": "2026-06-11",
     "due_date": "2026-07-11",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 3211900,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-021"
-  },
-  {
-    "invoice_id": "INV-007",
-    "client_id": "cli_copperli",
-    "issue_date": "2026-06-27",
-    "due_date": "2026-08-11",
-    "service_amount_paisa": 1800000,
-    "gst_applicable": true,
-    "deduction_kind": "NONE",
-    "notes": "receipt:INV-007"
   },
   {
     "invoice_id": "INV-041",
     "client_id": "cli_ironleaf",
     "issue_date": "2026-06-29",
     "due_date": "2026-08-13",
-    "service_amount_paisa": 7500000,
+    "service_amount_paisa": 8623400,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-041"
@@ -254,7 +234,7 @@
     "client_id": "cli_marrowin",
     "issue_date": "2026-07-03",
     "due_date": "2026-07-18",
-    "service_amount_paisa": 2000000,
+    "service_amount_paisa": 4294200,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-052"
@@ -264,7 +244,7 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2026-07-22",
     "due_date": "2026-08-06",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 7911000,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-045"
@@ -274,27 +254,67 @@
     "client_id": "cli_northwin",
     "issue_date": "2026-07-30",
     "due_date": "2026-09-13",
-    "service_amount_paisa": 2000000,
+    "service_amount_paisa": 4992900,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-043"
+  },
+  {
+    "invoice_id": "INV-TIE-A",
+    "client_id": "cli_bluepeak",
+    "issue_date": "2026-08-01",
+    "due_date": "2026-08-16",
+    "service_amount_paisa": 2875000,
+    "gst_applicable": false,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-TIE-A"
+  },
+  {
+    "invoice_id": "INV-TIE-B",
+    "client_id": "cli_fernhill",
+    "issue_date": "2026-08-02",
+    "due_date": "2026-08-17",
+    "service_amount_paisa": 2875000,
+    "gst_applicable": false,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-TIE-B"
   },
   {
     "invoice_id": "INV-019",
     "client_id": "cli_marrowin",
     "issue_date": "2026-08-03",
     "due_date": "2026-09-02",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6349200,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
-    "notes": "receipt:INV-019"
+    "notes": "receipt:INV-019;payment_id:pay_59095990995"
+  },
+  {
+    "invoice_id": "INV-007",
+    "client_id": "cli_tidewate",
+    "issue_date": "2026-08-04",
+    "due_date": "2026-08-19",
+    "service_amount_paisa": 7130100,
+    "gst_applicable": true,
+    "deduction_kind": "TDS_PROFESSIONAL_194J",
+    "notes": "receipt:INV-007"
+  },
+  {
+    "invoice_id": "INV-009",
+    "client_id": "cli_bluepeak",
+    "issue_date": "2026-08-05",
+    "due_date": "2026-09-19",
+    "service_amount_paisa": 8513800,
+    "gst_applicable": true,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-009"
   },
   {
     "invoice_id": "INV-031",
     "client_id": "cli_marrowin",
     "issue_date": "2026-08-07",
     "due_date": "2026-08-22",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 1937800,
     "gst_applicable": false,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-031"
@@ -304,7 +324,7 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2026-08-08",
     "due_date": "2026-08-23",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7239700,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-053"
@@ -314,17 +334,27 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-08-09",
     "due_date": "2026-08-24",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6760200,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-039"
+  },
+  {
+    "invoice_id": "INV-008",
+    "client_id": "cli_ironleaf",
+    "issue_date": "2026-08-16",
+    "due_date": "2026-08-31",
+    "service_amount_paisa": 3609200,
+    "gst_applicable": false,
+    "deduction_kind": "TDS_TECHNICAL_194J",
+    "notes": "receipt:INV-008"
   },
   {
     "invoice_id": "INV-030",
     "client_id": "cli_bluepeak",
     "issue_date": "2026-08-18",
     "due_date": "2026-09-17",
-    "service_amount_paisa": 7500000,
+    "service_amount_paisa": 9130300,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-030"
@@ -334,7 +364,7 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-08-18",
     "due_date": "2026-09-17",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7458900,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-051"
@@ -344,7 +374,7 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-08-20",
     "due_date": "2026-10-04",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7445200,
     "gst_applicable": false,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-047"
@@ -354,7 +384,7 @@
     "client_id": "cli_copperli",
     "issue_date": "2026-08-21",
     "due_date": "2026-09-05",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 2883100,
     "gst_applicable": false,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-003"
@@ -364,29 +394,19 @@
     "client_id": "cli_northwin",
     "issue_date": "2026-08-21",
     "due_date": "2026-09-20",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 4061300,
     "gst_applicable": false,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-060"
-  },
-  {
-    "invoice_id": "INV-006",
-    "client_id": "cli_fernhill",
-    "issue_date": "2026-08-27",
-    "due_date": "2026-09-11",
-    "service_amount_paisa": 1800000,
-    "gst_applicable": false,
-    "deduction_kind": "NONE",
-    "notes": "receipt:INV-006"
   },
   {
     "invoice_id": "INV-005",
     "client_id": "cli_tidewate",
     "issue_date": "2026-08-29",
     "due_date": "2026-10-13",
-    "service_amount_paisa": 7500000,
-    "gst_applicable": false,
-    "deduction_kind": "TDS_TECHNICAL_194J",
+    "service_amount_paisa": 5719000,
+    "gst_applicable": true,
+    "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-005"
   },
   {
@@ -394,17 +414,37 @@
     "client_id": "cli_northwin",
     "issue_date": "2026-08-31",
     "due_date": "2026-10-15",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 7760300,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-013"
+  },
+  {
+    "invoice_id": "INV-TIE-C",
+    "client_id": "cli_bluepeak",
+    "issue_date": "2026-09-01",
+    "due_date": "2026-09-16",
+    "service_amount_paisa": 3340000,
+    "gst_applicable": false,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-TIE-C"
+  },
+  {
+    "invoice_id": "INV-TIE-D",
+    "client_id": "cli_fernhill",
+    "issue_date": "2026-09-02",
+    "due_date": "2026-09-17",
+    "service_amount_paisa": 3340000,
+    "gst_applicable": false,
+    "deduction_kind": "NONE",
+    "notes": "receipt:INV-TIE-D"
   },
   {
     "invoice_id": "INV-036",
     "client_id": "cli_solacede",
     "issue_date": "2026-09-04",
     "due_date": "2026-09-19",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 3773600,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-036"
@@ -414,7 +454,7 @@
     "client_id": "cli_fernhill",
     "issue_date": "2026-09-07",
     "due_date": "2026-10-07",
-    "service_amount_paisa": 2500000,
+    "service_amount_paisa": 5883400,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-016"
@@ -424,7 +464,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-09-07",
     "due_date": "2026-10-22",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 5910800,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-056"
@@ -434,7 +474,7 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2026-09-17",
     "due_date": "2026-11-01",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7184900,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-049"
@@ -444,7 +484,7 @@
     "client_id": "cli_bluepeak",
     "issue_date": "2026-09-18",
     "due_date": "2026-10-18",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 4129800,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-035"
@@ -454,7 +494,7 @@
     "client_id": "cli_bluepeak",
     "issue_date": "2026-09-26",
     "due_date": "2026-10-11",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 4075000,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-028"
@@ -464,7 +504,7 @@
     "client_id": "cli_kestrela",
     "issue_date": "2026-10-06",
     "due_date": "2026-10-21",
-    "service_amount_paisa": 7500000,
+    "service_amount_paisa": 9144000,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-055;payment_id:pay_52798149836"
@@ -474,7 +514,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-10-07",
     "due_date": "2026-11-21",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 8390500,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-033"
@@ -484,7 +524,7 @@
     "client_id": "cli_northwin",
     "issue_date": "2026-10-12",
     "due_date": "2026-10-27",
-    "service_amount_paisa": 2500000,
+    "service_amount_paisa": 5677900,
     "gst_applicable": false,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-004"
@@ -494,7 +534,7 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2026-10-13",
     "due_date": "2026-11-27",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7212300,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-011"
@@ -504,7 +544,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-10-17",
     "due_date": "2026-11-16",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7020500,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-023"
@@ -514,7 +554,7 @@
     "client_id": "cli_tidewate",
     "issue_date": "2026-10-26",
     "due_date": "2026-12-10",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 2814600,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-034"
@@ -524,7 +564,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2026-11-02",
     "due_date": "2026-12-02",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 2129600,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-058"
@@ -534,7 +574,7 @@
     "client_id": "cli_kestrela",
     "issue_date": "2026-11-21",
     "due_date": "2026-12-21",
-    "service_amount_paisa": 1200000,
+    "service_amount_paisa": 1663800,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-027"
@@ -544,7 +584,7 @@
     "client_id": "cli_tidewate",
     "issue_date": "2026-12-09",
     "due_date": "2026-12-24",
-    "service_amount_paisa": 800000,
+    "service_amount_paisa": 1307600,
     "gst_applicable": false,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-010"
@@ -554,7 +594,7 @@
     "client_id": "cli_solacede",
     "issue_date": "2026-12-17",
     "due_date": "2027-01-16",
-    "service_amount_paisa": 6000000,
+    "service_amount_paisa": 8171300,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-037;payment_id:pay_32596747212"
@@ -564,7 +604,7 @@
     "client_id": "cli_copperli",
     "issue_date": "2027-01-01",
     "due_date": "2027-01-31",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 7171200,
     "gst_applicable": true,
     "deduction_kind": "TDS_TECHNICAL_194J",
     "notes": "receipt:INV-059"
@@ -574,7 +614,7 @@
     "client_id": "cli_solacede",
     "issue_date": "2027-01-02",
     "due_date": "2027-01-17",
-    "service_amount_paisa": 1500000,
+    "service_amount_paisa": 2581700,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-048"
@@ -584,7 +624,7 @@
     "client_id": "cli_marrowin",
     "issue_date": "2027-01-08",
     "due_date": "2027-02-22",
-    "service_amount_paisa": 3200000,
+    "service_amount_paisa": 6636900,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-032"
@@ -594,7 +634,7 @@
     "client_id": "cli_ironleaf",
     "issue_date": "2027-01-22",
     "due_date": "2027-03-08",
-    "service_amount_paisa": 2500000,
+    "service_amount_paisa": 5157300,
     "gst_applicable": true,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-042"
@@ -604,7 +644,7 @@
     "client_id": "cli_arjuntex",
     "issue_date": "2027-01-27",
     "due_date": "2027-03-13",
-    "service_amount_paisa": 1800000,
+    "service_amount_paisa": 3869500,
     "gst_applicable": true,
     "deduction_kind": "TDS_PROFESSIONAL_194J",
     "notes": "receipt:INV-017"
@@ -614,7 +654,7 @@
     "client_id": "cli_tidewate",
     "issue_date": "2027-01-30",
     "due_date": "2027-03-01",
-    "service_amount_paisa": 4500000,
+    "service_amount_paisa": 6856100,
     "gst_applicable": false,
     "deduction_kind": "NONE",
     "notes": "receipt:INV-046"

@@ -14,7 +14,7 @@ INV-TIE-C/D abbreviates the name the way real bank narrations often
 do ("BLUPEAK CNSLTNG" for "BluePeak Consulting"), which defeats the
 substring check but is exactly the kind of thing a language model can
 still recognise. See DECISIONS.md Entry 7 and
-tests/test_engine.py::test_garbled_name_tie_is_declined_not_guessed_without_llm_help.
+tests/test_engine.py::test_garbled_name_tie_is_wrong_without_llm_help.
 
 This is the orchestration layer - the one place allowed to import BOTH
 core/ and llm/ - core/match.py itself never imports llm/ (see
@@ -72,7 +72,7 @@ def _tie_outcome(ledger) -> tuple[str | None, str | None]:
 
 
 def run_ablation(live: bool = False) -> None:
-    batch = generate_batch(seed=42, n_random=40)
+    batch = generate_batch(seed=42, n_random=60)
 
     print("=== OFF: no narration hint at all (tier 1's free substring check still runs) ===")
     ledger_off = run_matcher(batch)

@@ -71,7 +71,7 @@ def _make_client(name: str, tan: str, pan_on_file: bool = True) -> Client:
     return Client(client_id=f"cli_{slug}", name=name, pan_on_file=pan_on_file, tan=tan)
 
 
-def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
+def generate_batch(seed: int = 42, n_random: int = 60) -> Batch:
     rng = random.Random(seed)
     batch = Batch()
 
@@ -95,7 +95,14 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         client = rng.choice(clients)
         issue_date = _random_date(rng, FY_START, FY_END - timedelta(days=60))
         due_date = issue_date + timedelta(days=rng.choice([15, 30, 45]))
-        amount_rupees = rng.choice([8000, 12000, 15000, 18000, 20000, 25000, 32000, 45000, 60000, 75000])
+        # Deliberately wide and irregular so exact-amount collisions between
+        # unrelated clients stay rare, as with real invoice amounts - a small
+        # fixed set of round numbers (an earlier version of this generator)
+        # made unrelated clients collide on identical predicted nets constantly,
+        # which starved the real invoice of its own credit and inflated the
+        # UNMATCHED_INVOICE count for reasons that had nothing to do with
+        # matcher quality. See DECISIONS.md.
+        amount_rupees = rng.randrange(6_500, 92_000, 137)
         gst_applicable = rng.random() < 0.6
         kind = rng.choice([
             DeductionKind.TDS_PROFESSIONAL_194J,
@@ -267,12 +274,23 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         raw_narration="UPI/CR/998878/NORTHWINDSTUDIOSLLP/ICIC/part2", utr="998878",
     ))
 
-    # Cross-client tie: two DIFFERENT clients each invoice the identical
-    # amount, credited within days of each other via generic UPI credits
-    # that carry no Razorpay identifiers and no matching UTR reference in
-    # either invoice - so stages 1 and 2 cannot resolve them, and amount +
-    # date alone (stage 3) cannot tell the two credits apart. Only the
-    # counterparty name embedded in each credit's raw narration can.
+    # Cross-client tie #1 (CLEAN names): two DIFFERENT clients each invoice
+    # the identical amount, credited within days of each other via generic
+    # UPI credits with no Razorpay identifiers and no matching UTR either
+    # invoice references - so stages 1 and 2 cannot resolve them, and
+    # amount+date alone (stage 3's core comparison) cannot tell the two
+    # credits apart. Here the narration spells the counterparty name out
+    # in full, so core.match's own deterministic tier-1 check (a free
+    # substring match against the raw narration - see
+    # _stage3_hypothesis's docstring) resolves this one correctly with NO
+    # model call at all. Kept as a regression test for that tier - see
+    # test_cross_client_tie_resolves_deterministically_via_substring_match.
+    # It is NOT the ablation scenario (see the garbled-name pair below for
+    # that) - a first version of this file used exactly this clean-name
+    # pair as the ablation, and it turned out to be a bad one: once the
+    # cheap substring check was added, it solved this tie for free,
+    # silently invalidating the "needs an LLM" claim. See DECISIONS.md
+    # Entry 7.
     tie_a, tie_b = clients[2], clients[3]   # BluePeak Consulting, Fernhill Media
     tie_amount = rupees_to_paisa("28750.00")
     batch.invoices.append(Invoice(
@@ -300,12 +318,18 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         raw_narration="UPI/CR/700011122233/BLUEPEAKCONSULTING/HDFC/aug-fee", utr="700011122233",
     ))
 
-    # Second tie, GARBLED names this time - the substring check we just
-    # added solves the clean-name pair above for free, so it's useless as
-    # an ablation. This one abbreviates the counterparty name the way real
-    # bank narrations often do under a character budget ("BLUPEAK CNSLTNG"
-    # for "BluePeak Consulting"), which the substring check can't see
-    # through but a language model should be able to.
+    # Cross-client tie #2 (GARBLED names) - the genuine ablation scenario.
+    # Same structure as tie #1, but the narration abbreviates/drops
+    # letters from the counterparty name the way real bank narrations
+    # often do under a fixed character budget - "BLUPEAK CNSLTNG" for
+    # "BluePeak Consulting", "FRNHL MEDIA" for "Fernhill Media". Neither
+    # garbled form contains the client's full compacted name as a
+    # substring (verified: `bluepeakconsulting` is not `in`
+    # `blupeakcnsltnghdfcsepfee`), so core.match's free tier-1 substring
+    # check CANNOT resolve this one - only genuine language
+    # understanding (a real LLM reading "BLUPEAK CNSLTNG" and recognising
+    # it as BluePeak Consulting) can. This is what eval/ablation.py
+    # measures now.
     tie_amount2 = rupees_to_paisa("33400.00")
     batch.invoices.append(Invoice(
         invoice_id="INV-TIE-C", client_id=tie_a.client_id,
@@ -319,6 +343,8 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
         service_amount_paisa=tie_amount2, gst_applicable=False,
         deduction_kind=DeductionKind.NONE, notes="receipt:INV-TIE-D",
     ))
+    # again appended out of client order (D's credit before C's) so the
+    # arbitrary-first-found tier-3 fallback picks wrong without real help.
     batch.credits.append(Credit(
         credit_id="CR-TIE-D", value_date=date(2026, 9, 11),
         amount_paisa=tie_amount2, rail=Rail.UPI,
@@ -332,6 +358,7 @@ def generate_batch(seed: int = 42, n_random: int = 40) -> Batch:
 
     batch.invoices.sort(key=lambda i: i.issue_date)
     return batch
+
 
 def _pay_clean(batch: Batch, rng: random.Random, invoice: Invoice, ruleset, client: Client,
                credit_date: date, entry_counter: int) -> None:
@@ -392,7 +419,7 @@ def write_batch(batch: Batch, out_dir: Path) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate the Ghost Rupees synthetic batch.")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--n", type=int, default=40)
+    parser.add_argument("--n", type=int, default=60)
     parser.add_argument("--out", type=str, default="data/fixtures/golden")
     args = parser.parse_args()
     b = generate_batch(seed=args.seed, n_random=args.n)

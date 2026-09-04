@@ -2,7 +2,7 @@
   {
     "credit_id": "CR-0001",
     "value_date": "2026-05-29",
-    "amount_paisa": 2360000,
+    "amount_paisa": 5309646,
     "rail": "UPI",
     "raw_narration": "UPI/CR/86846326096/NORTHWINDSTUDIOSLLP/KKBK/",
     "utr": "86846326096",
@@ -12,7 +12,7 @@
   {
     "credit_id": "CR-0002",
     "value_date": "2026-05-10",
-    "amount_paisa": 1296000,
+    "amount_paisa": 2107620,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/68175080694/IRONLEAFVENTURES",
     "utr": "68175080694",
@@ -22,7 +22,7 @@
   {
     "credit_id": "CR-0003",
     "value_date": "2026-09-09",
-    "amount_paisa": 1500000,
+    "amount_paisa": 2883100,
     "rail": "UPI",
     "raw_narration": "IMPS-36437583152-COPPERLINERETAIL-HDFC",
     "utr": "36437583152",
@@ -32,7 +32,7 @@
   {
     "credit_id": "CR-0004",
     "value_date": "2026-10-27",
-    "amount_paisa": 2450000,
+    "amount_paisa": 5627900,
     "rail": "UPI",
     "raw_narration": "RTGS INW 73263716304 NORTHWINDSTUDIOSLLP",
     "utr": "73263716304",
@@ -41,60 +41,60 @@
   },
   {
     "credit_id": "CR-0005",
-    "value_date": "2026-09-15",
-    "amount_paisa": 120000,
+    "value_date": "2026-06-05",
+    "amount_paisa": 50000,
     "rail": "UPI",
-    "raw_narration": "NEFT/SBIN/97846728339/FRIEND",
-    "utr": "97846728339",
+    "raw_narration": "IMPS-60827117278-FRIEND-SBIN",
+    "utr": "60827117278",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-clean-INV-006",
-    "value_date": "2026-09-15",
-    "amount_paisa": 1800000,
+    "value_date": "2026-06-05",
+    "amount_paisa": 2432098,
     "rail": "UPI",
-    "raw_narration": "IMPS-37295679827-FERNHILLMEDIA-HDFC",
-    "utr": "37295679827",
+    "raw_narration": "BY TRANSFER-KESTRELANALYTICS-21373225387",
+    "utr": "21373225387",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-0006",
-    "value_date": "2026-08-15",
-    "amount_paisa": 2124000,
+    "value_date": "2026-08-29",
+    "amount_paisa": 6417090,
     "rail": "UPI",
-    "raw_narration": "IMPS-42456852025-COPPERLINERETAIL-HDFC",
-    "utr": "42456852025",
+    "raw_narration": "UPI/CR/40305022733/TIDEWATERLABS/SBIN/no-gst",
+    "utr": "40305022733",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-0007",
-    "value_date": "2026-05-26",
-    "amount_paisa": 3776000,
+    "value_date": "2026-09-03",
+    "amount_paisa": 3609200,
     "rail": "UPI",
-    "raw_narration": "RTGS INW 37121334999 FERNHILLMEDIA",
-    "utr": "37121334999",
+    "raw_narration": "RTGS INW 77239597077 IRONLEAFVENTURES",
+    "utr": "77239597077",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-0008",
-    "value_date": "2026-05-26",
-    "amount_paisa": 3776000,
+    "value_date": "2026-09-03",
+    "amount_paisa": 3609200,
     "rail": "UPI",
-    "raw_narration": "RTGS INW 37121334999 FERNHILLMEDIA",
-    "utr": "37121334999",
+    "raw_narration": "NEFT/SBIN/77239597077/IRONLEAFVENTURES",
+    "utr": "77239597077",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-0009",
-    "value_date": "2026-07-05",
-    "amount_paisa": 7080000,
+    "value_date": "2026-09-28",
+    "amount_paisa": 10046284,
     "rail": "UPI",
-    "raw_narration": "NEFT/ICIC/58960052375/KESTRELANALYTICS",
+    "raw_narration": "NEFT/ICIC/58960052375/BLUEPEAKCONSULTING",
     "utr": "58960052375",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
@@ -102,7 +102,7 @@
   {
     "credit_id": "CR-0010",
     "value_date": "2027-01-03",
-    "amount_paisa": 800000,
+    "amount_paisa": 1307600,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-TIDEWATERLABS-68757219412",
     "utr": "68757219412",
@@ -112,7 +112,7 @@
   {
     "credit_id": "CR-0011",
     "value_date": "2026-12-07",
-    "amount_paisa": 4860000,
+    "amount_paisa": 7789284,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-IRONLEAFVENTURES-25980378553",
     "utr": "25980378553",
@@ -122,7 +122,7 @@
   {
     "credit_id": "CR-0012",
     "value_date": "2026-07-01",
-    "amount_paisa": 3712000,
+    "amount_paisa": 7825940,
     "rail": "NEFT",
     "raw_narration": "NEFT/KKBK/82893704331/SOLACEDESIGNCO",
     "utr": "82893704331",
@@ -132,7 +132,7 @@
   {
     "credit_id": "CR-0013",
     "value_date": "2026-10-20",
-    "amount_paisa": 5950000,
+    "amount_paisa": 7710300,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-NORTHWINDSTUDIOSLLP-34749795425",
     "utr": "34749795425",
@@ -152,7 +152,7 @@
   {
     "credit_id": "CR-clean-INV-015",
     "value_date": "2026-05-28",
-    "amount_paisa": 4500000,
+    "amount_paisa": 6713010,
     "rail": "UPI",
     "raw_narration": "NEFT/KKBK/68439875878/COPPERLINERETAIL",
     "utr": "68439875878",
@@ -162,7 +162,7 @@
   {
     "credit_id": "CR-0015",
     "value_date": "2026-10-08",
-    "amount_paisa": 2950000,
+    "amount_paisa": 6942412,
     "rail": "UPI",
     "raw_narration": "UPI/CR/41129517597/FERNHILLMEDIA/SBIN/",
     "utr": "41129517597",
@@ -172,7 +172,7 @@
   {
     "credit_id": "CR-0016",
     "value_date": "2027-03-14",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4566010,
     "rail": "UPI",
     "raw_narration": "UPI/CR/98939499630/ARJUNTEXTILESPVTLTD/ICIC/",
     "utr": "98939499630",
@@ -182,7 +182,7 @@
   {
     "credit_id": "CR-0017",
     "value_date": "2027-03-14",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4566010,
     "rail": "UPI",
     "raw_narration": "UPI/CR/98939499630/ARJUNTEXTILESPVTLTD/HDFC/dup",
     "utr": "98939499630",
@@ -192,7 +192,7 @@
   {
     "credit_id": "CR-0018",
     "value_date": "2026-06-24",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4695338,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-SOLACEDESIGNCO-29495861299",
     "utr": "29495861299",
@@ -202,17 +202,17 @@
   {
     "credit_id": "CR-0019",
     "value_date": "2026-09-12",
-    "amount_paisa": 3776000,
+    "amount_paisa": 6857136,
     "rail": "UPI",
     "raw_narration": "RTGS INW 59095990995 MARROWINTERACTIVE",
     "utr": "59095990995",
-    "razorpay_payment_id": null,
+    "razorpay_payment_id": "pay_59095990995",
     "razorpay_customer_identifier": null
   },
   {
     "credit_id": "CR-0020",
     "value_date": "2026-06-13",
-    "amount_paisa": 1392000,
+    "amount_paisa": 2343200,
     "rail": "UPI",
     "raw_narration": "NEFT/KKBK/36837774596/MARROWINTERACTIVE",
     "utr": "36837774596",
@@ -222,7 +222,7 @@
   {
     "credit_id": "CR-0021",
     "value_date": "2026-07-12",
-    "amount_paisa": 1740000,
+    "amount_paisa": 3725804,
     "rail": "NEFT",
     "raw_narration": "UPI/CR/25248531107/MARROWINTERACTIVE/KKBK/",
     "utr": "25248531107",
@@ -232,7 +232,7 @@
   {
     "credit_id": "CR-0022",
     "value_date": "2026-06-05",
-    "amount_paisa": 1720000,
+    "amount_paisa": 3465220,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/65253252721/ARJUNTEXTILESPVTLTD",
     "utr": "65253252721",
@@ -252,7 +252,7 @@
   {
     "credit_id": "CR-clean-INV-024",
     "value_date": "2026-06-14",
-    "amount_paisa": 6960000,
+    "amount_paisa": 9574060,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-FERNHILLMEDIA-14971135717",
     "utr": "14971135717",
@@ -262,7 +262,7 @@
   {
     "credit_id": "CR-0024",
     "value_date": "2026-06-26",
-    "amount_paisa": 1200000,
+    "amount_paisa": 1595300,
     "rail": "UPI",
     "raw_narration": "NEFT/KKBK/91133166233/BLUEPEAKCONSULTING",
     "utr": "91133166233",
@@ -272,7 +272,7 @@
   {
     "credit_id": "CR-0025",
     "value_date": "2026-06-09",
-    "amount_paisa": 1416000,
+    "amount_paisa": 2108778,
     "rail": "UPI",
     "raw_narration": "NEFT/SBIN/56025693325/COPPERLINERETAIL",
     "utr": "56025693325",
@@ -282,7 +282,7 @@
   {
     "credit_id": "CR-0026",
     "value_date": "2026-06-09",
-    "amount_paisa": 1416000,
+    "amount_paisa": 2108778,
     "rail": "UPI",
     "raw_narration": "RTGS INW 56025693325 COPPERLINERETAIL",
     "utr": "56025693325",
@@ -292,7 +292,7 @@
   {
     "credit_id": "CR-0027",
     "value_date": "2026-12-22",
-    "amount_paisa": 1416000,
+    "amount_paisa": 1963284,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-KESTRELANALYTICS-38078925963",
     "utr": "38078925963",
@@ -302,7 +302,7 @@
   {
     "credit_id": "CR-0028",
     "value_date": "2026-10-18",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4808500,
     "rail": "UPI",
     "raw_narration": "IMPS-86595351346-BLUEPEAKCONSULTING-KKBK",
     "utr": "86595351346",
@@ -312,7 +312,7 @@
   {
     "credit_id": "CR-0029",
     "value_date": "2026-05-22",
-    "amount_paisa": 6480000,
+    "amount_paisa": 9091332,
     "rail": "UPI",
     "raw_narration": "UPI/CR/24020774383/TIDEWATERLABS/KKBK/",
     "utr": "24020774383",
@@ -322,7 +322,7 @@
   {
     "credit_id": "CR-0030",
     "value_date": "2026-09-20",
-    "amount_paisa": 8850000,
+    "amount_paisa": 10773754,
     "rail": "UPI",
     "raw_narration": "IMPS-98852123602-BLUEPEAKCONSULTING-KKBK",
     "utr": "98852123602",
@@ -332,7 +332,7 @@
   {
     "credit_id": "CR-0031",
     "value_date": "2026-08-22",
-    "amount_paisa": 1100000,
+    "amount_paisa": 1837800,
     "rail": "UPI",
     "raw_narration": "IMPS-52964901582-MARROWINTERACTIVE-ICIC",
     "utr": "52964901582",
@@ -352,7 +352,7 @@
   {
     "credit_id": "CR-clean-INV-033",
     "value_date": "2026-11-21",
-    "amount_paisa": 6480000,
+    "amount_paisa": 9061740,
     "rail": "UPI",
     "raw_narration": "UPI/CR/42994225206/ARJUNTEXTILESPVTLTD/SBIN/",
     "utr": "42994225206",
@@ -362,7 +362,7 @@
   {
     "credit_id": "CR-0033",
     "value_date": "2026-12-12",
-    "amount_paisa": 1500000,
+    "amount_paisa": 2814600,
     "rail": "UPI",
     "raw_narration": "RTGS INW 34957074522 TIDEWATERLABS",
     "utr": "34957074522",
@@ -372,7 +372,7 @@
   {
     "credit_id": "CR-0034",
     "value_date": "2026-10-24",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4873164,
     "rail": "UPI",
     "raw_narration": "RTGS INW 18040895120 BLUEPEAKCONSULTING",
     "utr": "18040895120",
@@ -382,7 +382,7 @@
   {
     "credit_id": "CR-0035",
     "value_date": "2026-10-24",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4873164,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/18040895120/BLUEPEAKCONSULTING",
     "utr": "18040895120",
@@ -392,7 +392,7 @@
   {
     "credit_id": "CR-0036",
     "value_date": "2026-09-25",
-    "amount_paisa": 2124000,
+    "amount_paisa": 4452848,
     "rail": "UPI",
     "raw_narration": "UPI/CR/45769612716/SOLACEDESIGNCO/SBIN/",
     "utr": "45769612716",
@@ -402,7 +402,7 @@
   {
     "credit_id": "CR-0037",
     "value_date": "2027-01-17",
-    "amount_paisa": 6480000,
+    "amount_paisa": 8825004,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-SOLACEDESIGNCO-32596747212",
     "utr": "32596747212",
@@ -412,7 +412,7 @@
   {
     "credit_id": "CR-0038",
     "value_date": "2026-07-16",
-    "amount_paisa": 3712000,
+    "amount_paisa": 7810048,
     "rail": "UPI",
     "raw_narration": "RTGS INW 25081447213 ARJUNTEXTILESPVTLTD",
     "utr": "25081447213",
@@ -422,7 +422,7 @@
   {
     "credit_id": "CR-0039",
     "value_date": "2026-08-29",
-    "amount_paisa": 3712000,
+    "amount_paisa": 7841832,
     "rail": "NEFT",
     "raw_narration": "IMPS-20442342819-FERNHILLMEDIA-KKBK",
     "utr": "20442342819",
@@ -432,7 +432,7 @@
   {
     "credit_id": "CR-0040",
     "value_date": "2026-07-23",
-    "amount_paisa": 2260000,
+    "amount_paisa": 5629962,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/84284273440/SOLACEDESIGNCO",
     "utr": "84284273440",
@@ -452,7 +452,7 @@
   {
     "credit_id": "CR-clean-INV-042",
     "value_date": "2027-03-18",
-    "amount_paisa": 2950000,
+    "amount_paisa": 6085614,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-IRONLEAFVENTURES-79938330064",
     "utr": "79938330064",
@@ -462,7 +462,7 @@
   {
     "credit_id": "CR-0042",
     "value_date": "2026-09-15",
-    "amount_paisa": 1800000,
+    "amount_paisa": 4493610,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/14399873551/NORTHWINDSTUDIOSLLP",
     "utr": "14399873551",
@@ -472,7 +472,7 @@
   {
     "credit_id": "CR-0043",
     "value_date": "2026-06-13",
-    "amount_paisa": 3200000,
+    "amount_paisa": 6458800,
     "rail": "UPI",
     "raw_narration": "NEFT/ICIC/63662941333/COPPERLINERETAIL",
     "utr": "63662941333",
@@ -482,7 +482,7 @@
   {
     "credit_id": "CR-0044",
     "value_date": "2026-06-13",
-    "amount_paisa": 3200000,
+    "amount_paisa": 6458800,
     "rail": "UPI",
     "raw_narration": "UPI/CR/63662941333/COPPERLINERETAIL/HDFC/dup",
     "utr": "63662941333",
@@ -492,7 +492,7 @@
   {
     "credit_id": "CR-0045",
     "value_date": "2026-08-07",
-    "amount_paisa": 7080000,
+    "amount_paisa": 9334980,
     "rail": "UPI",
     "raw_narration": "RTGS INW 29140357823 IRONLEAFVENTURES",
     "utr": "29140357823",
@@ -502,7 +502,7 @@
   {
     "credit_id": "CR-0046",
     "value_date": "2027-03-09",
-    "amount_paisa": 4500000,
+    "amount_paisa": 6856100,
     "rail": "UPI",
     "raw_narration": "RTGS INW 78124601904 TIDEWATERLABS",
     "utr": "78124601904",
@@ -512,7 +512,7 @@
   {
     "credit_id": "CR-0047",
     "value_date": "2026-10-11",
-    "amount_paisa": 4410000,
+    "amount_paisa": 7296296,
     "rail": "UPI",
     "raw_narration": "IMPS-41291964145-FERNHILLMEDIA-SBIN",
     "utr": "41291964145",
@@ -522,7 +522,7 @@
   {
     "credit_id": "CR-0048",
     "value_date": "2027-01-19",
-    "amount_paisa": 1770000,
+    "amount_paisa": 3046406,
     "rail": "UPI",
     "raw_narration": "UPI/CR/38803850894/SOLACEDESIGNCO/UTIB/",
     "utr": "38803850894",
@@ -532,7 +532,7 @@
   {
     "credit_id": "CR-0049",
     "value_date": "2026-11-07",
-    "amount_paisa": 5260000,
+    "amount_paisa": 8428182,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-IRONLEAFVENTURES-90615659007",
     "utr": "90615659007",
@@ -552,7 +552,7 @@
   {
     "credit_id": "CR-clean-INV-051",
     "value_date": "2026-09-27",
-    "amount_paisa": 5310000,
+    "amount_paisa": 8652324,
     "rail": "UPI",
     "raw_narration": "RTGS INW 18706337023 FERNHILLMEDIA",
     "utr": "18706337023",
@@ -562,7 +562,7 @@
   {
     "credit_id": "CR-0051",
     "value_date": "2026-07-25",
-    "amount_paisa": 1800000,
+    "amount_paisa": 3864780,
     "rail": "UPI",
     "raw_narration": "RTGS INW 54353465017 MARROWINTERACTIVE",
     "utr": "54353465017",
@@ -572,7 +572,7 @@
   {
     "credit_id": "CR-0052",
     "value_date": "2026-08-28",
-    "amount_paisa": 5310000,
+    "amount_paisa": 8542846,
     "rail": "UPI",
     "raw_narration": "UPI/CR/96862372775/IRONLEAFVENTURES/HDFC/",
     "utr": "96862372775",
@@ -582,7 +582,7 @@
   {
     "credit_id": "CR-0053",
     "value_date": "2026-08-28",
-    "amount_paisa": 5310000,
+    "amount_paisa": 8542846,
     "rail": "UPI",
     "raw_narration": "UPI/CR/96862372775/IRONLEAFVENTURES/ICIC/dup",
     "utr": "96862372775",
@@ -592,7 +592,7 @@
   {
     "credit_id": "CR-0054",
     "value_date": "2026-06-05",
-    "amount_paisa": 1770000,
+    "amount_paisa": 3288896,
     "rail": "UPI",
     "raw_narration": "NEFT/UTIB/87800710257/FERNHILLMEDIA",
     "utr": "87800710257",
@@ -602,7 +602,7 @@
   {
     "credit_id": "CR-0055",
     "value_date": "2026-10-23",
-    "amount_paisa": 6750000,
+    "amount_paisa": 8229600,
     "rail": "UPI",
     "raw_narration": "UPI/CR/52798149836/KESTRELANALYTICS/KKBK/",
     "utr": "52798149836",
@@ -612,7 +612,7 @@
   {
     "credit_id": "CR-0056",
     "value_date": "2026-10-23",
-    "amount_paisa": 3456000,
+    "amount_paisa": 6383664,
     "rail": "UPI",
     "raw_narration": "NEFT/HDFC/99466623911/ARJUNTEXTILESPVTLTD",
     "utr": "99466623911",
@@ -622,7 +622,7 @@
   {
     "credit_id": "CR-0057",
     "value_date": "2026-07-26",
-    "amount_paisa": 944000,
+    "amount_paisa": 1445972,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-KESTRELANALYTICS-20181524415",
     "utr": "20181524415",
@@ -632,7 +632,7 @@
   {
     "credit_id": "CR-0058",
     "value_date": "2026-12-12",
-    "amount_paisa": 1316000,
+    "amount_paisa": 2412928,
     "rail": "UPI",
     "raw_narration": "BY TRANSFER-ARJUNTEXTILESPVTLTD-66491666830",
     "utr": "66491666830",
@@ -652,7 +652,7 @@
   {
     "credit_id": "CR-clean-INV-060",
     "value_date": "2026-09-25",
-    "amount_paisa": 1800000,
+    "amount_paisa": 4061300,
     "rail": "UPI",
     "raw_narration": "IMPS-58155688071-NORTHWINDSTUDIOSLLP-SBIN",
     "utr": "58155688071",
@@ -686,6 +686,46 @@
     "rail": "UPI",
     "raw_narration": "UPI/CR/998878/NORTHWINDSTUDIOSLLP/ICIC/part2",
     "utr": "998878",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-TIE-B",
+    "value_date": "2026-08-11",
+    "amount_paisa": 2875000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/700011122244/FERNHILLMEDIA/ICIC/aug-fee",
+    "utr": "700011122244",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-TIE-A",
+    "value_date": "2026-08-10",
+    "amount_paisa": 2875000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/700011122233/BLUEPEAKCONSULTING/HDFC/aug-fee",
+    "utr": "700011122233",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-TIE-D",
+    "value_date": "2026-09-11",
+    "amount_paisa": 3340000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/700099911133/FRNHL MEDIA/ICIC/sep-fee",
+    "utr": "700099911133",
+    "razorpay_payment_id": null,
+    "razorpay_customer_identifier": null
+  },
+  {
+    "credit_id": "CR-TIE-C",
+    "value_date": "2026-09-10",
+    "amount_paisa": 3340000,
+    "rail": "UPI",
+    "raw_narration": "UPI/CR/700099911122/BLUPEAK CNSLTNG/HDFC/sep-fee",
+    "utr": "700099911122",
     "razorpay_payment_id": null,
     "razorpay_customer_identifier": null
   }
