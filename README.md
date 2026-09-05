@@ -13,7 +13,8 @@
 
 <br>
 
-<img width="1600" height="500" alt="ghost_rupees_readme_banner" src="REPLACE_WITH_YOUR_UPLOADED_BANNER_URL" />
+<img width="2172" height="724" alt="banner" src="https://github.com/user-attachments/assets/c6e93084-1d5e-4f7a-b9cf-0d1d0bf2ede2" />
+
 
 ## 📌 Table of Contents
 <details>
