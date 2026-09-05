@@ -1,0 +1,43 @@
+{
+  "entity": "collection",
+  "count": 3,
+  "items": [
+    {
+      "id": "cust_TYH3hXLWKuLGVK",
+      "entity": "customer",
+      "name": "Arjun Textiles Pvt Ltd",
+      "email": "arjun.textiles.593548@example.com",
+      "contact": "98765593548",
+      "gstin": null,
+      "notes": {
+        "source": "ghost-rupees-fixture"
+      },
+      "shipping_address": [],
+      "created_at": 1788593551
+    },
+    {
+      "id": "cust_TYH23kcRwlfHq0",
+      "entity": "customer",
+      "name": "BluePeak Consulting",
+      "email": "billing@bluepeak.example.com",
+      "contact": "9876500001",
+      "gstin": null,
+      "notes": [],
+      "shipping_address": [],
+      "created_at": 1788593457
+    },
+    {
+      "id": "cust_TYGzXRO3ajqrap",
+      "entity": "customer",
+      "name": "Arjun Textiles Pvt Ltd",
+      "email": "arjun.textiles@example.com",
+      "contact": "9876543210",
+      "gstin": null,
+      "notes": {
+        "source": "ghost-rupees-fixture"
+      },
+      "shipping_address": [],
+      "created_at": 1788593314
+    }
+  ]
+}

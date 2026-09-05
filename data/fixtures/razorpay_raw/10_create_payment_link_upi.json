@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "BAD_REQUEST_ERROR",
+    "description": "UPI Payment Links is not supported in Test Mode. Please experience the product in Live Mode.",
+    "metadata": [],
+    "reason": null,
+    "source": null,
+    "step": null
+  }
+}

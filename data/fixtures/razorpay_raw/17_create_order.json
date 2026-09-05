@@ -1,0 +1,16 @@
+{
+  "amount": 4500000,
+  "amount_due": 4500000,
+  "amount_paid": 0,
+  "attempts": 0,
+  "created_at": 1788593561,
+  "currency": "INR",
+  "entity": "order",
+  "id": "order_TYH3slaVT0SOvX",
+  "notes": {
+    "source": "fixture"
+  },
+  "offer_id": null,
+  "receipt": "ghost-rupees-fixture-1",
+  "status": "created"
+}

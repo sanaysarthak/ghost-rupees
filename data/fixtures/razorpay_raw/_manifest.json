@@ -1,0 +1,95 @@
+{
+  "calls": [
+    {
+      "name": "01_create_customer",
+      "method": "POST",
+      "path": "/customers",
+      "status": 200
+    },
+    {
+      "name": "02_fetch_customer",
+      "method": "GET",
+      "path": "/customers/cust_TYH3hXLWKuLGVK",
+      "status": 200
+    },
+    {
+      "name": "03_fetch_all_customers",
+      "method": "GET",
+      "path": "/customers",
+      "status": 200
+    },
+    {
+      "name": "04_create_invoice_with_details",
+      "method": "POST",
+      "path": "/invoices",
+      "status": 200
+    },
+    {
+      "name": "05_create_invoice_with_customer_id",
+      "method": "POST",
+      "path": "/invoices",
+      "status": 200
+    },
+    {
+      "name": "06_fetch_invoice",
+      "method": "GET",
+      "path": "/invoices/inv_TYH3jBfy4RhuDA",
+      "status": 200
+    },
+    {
+      "name": "08_fetch_all_invoices",
+      "method": "GET",
+      "path": "/invoices",
+      "status": 200
+    },
+    {
+      "name": "09_create_payment_link_standard",
+      "method": "POST",
+      "path": "/payment_links",
+      "status": 200
+    },
+    {
+      "name": "10_create_payment_link_upi",
+      "method": "POST",
+      "path": "/payment_links",
+      "status": 400
+    },
+    {
+      "name": "11_fetch_payment_link",
+      "method": "GET",
+      "path": "/payment_links/plink_TYH3nJz5xc8UFC",
+      "status": 200
+    },
+    {
+      "name": "12_fetch_all_payment_links",
+      "method": "GET",
+      "path": "/payment_links",
+      "status": 200
+    },
+    {
+      "name": "13_create_smart_collect_identifier",
+      "method": "POST",
+      "path": "/virtual_accounts",
+      "status": 400
+    },
+    {
+      "name": "16_fetch_all_smart_collect_identifiers",
+      "method": "GET",
+      "path": "/virtual_accounts",
+      "status": 400
+    },
+    {
+      "name": "17_create_order",
+      "method": "POST",
+      "path": "/orders",
+      "status": 200
+    },
+    {
+      "name": "18_fetch_all_payments",
+      "method": "GET",
+      "path": "/payments",
+      "status": 200
+    }
+  ],
+  "generated_at": "2026-09-05T07:32:40Z"
+}

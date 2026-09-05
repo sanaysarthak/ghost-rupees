@@ -1,0 +1,38 @@
+{
+  "accept_partial": false,
+  "allow_full_payment": false,
+  "amount": 2875000,
+  "amount_paid": 0,
+  "cancelled_at": 0,
+  "created_at": 1788593556,
+  "currency": "INR",
+  "customer": {
+    "contact": "9876500002",
+    "email": "pay@fernhillmedia.example.com",
+    "name": "Fernhill Media"
+  },
+  "description": "Ghost Rupees fixture - standard payment link",
+  "expire_by": 0,
+  "expired_at": 0,
+  "first_min_partial_amount": 0,
+  "id": "plink_TYH3nJz5xc8UFC",
+  "notes": null,
+  "notify": {
+    "email": false,
+    "sms": false,
+    "whatsapp": false
+  },
+  "payment_plan": false,
+  "payments": [],
+  "reference_id": "",
+  "reminder_enable": false,
+  "reminders": {
+    "status": "failed"
+  },
+  "short_url": "https://rzp.io/rzp/fS2vPa3",
+  "status": "created",
+  "updated_at": 1788593556,
+  "upi_link": false,
+  "user_id": "",
+  "whatsapp_link": false
+}

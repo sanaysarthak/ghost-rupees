@@ -1,0 +1,13 @@
+{
+  "id": "cust_TYH3hXLWKuLGVK",
+  "entity": "customer",
+  "name": "Arjun Textiles Pvt Ltd",
+  "email": "arjun.textiles.593548@example.com",
+  "contact": "98765593548",
+  "gstin": null,
+  "notes": {
+    "source": "ghost-rupees-fixture"
+  },
+  "shipping_address": [],
+  "created_at": 1788593551
+}
