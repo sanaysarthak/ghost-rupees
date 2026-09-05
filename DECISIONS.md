@@ -438,8 +438,109 @@ not just if the mock is self-consistent. `requirements.txt` swapped
 `anthropic` for `google-genai`. All 48 tests pass unchanged in count -
 this was a like-for-like provider swap, not new functionality.
 
-**Not yet done:** no live Gemini call has actually been made - the
-mocked tests prove the wiring is correct, they don't prove the real
-API behaves exactly as documented. First real run (`eval/ablation.py
---live` once `GEMINI_API_KEY` is set) is the actual proof and hasn't
-happened yet.
+**Update, same day, once a real key arrived:** it does. See Entry 11
+for the full live run - both jobs work, and getting there surfaced
+three more real things worth fixing.
+
+## Entry 11 — 2026-09-05 — the first live Gemini calls, and three real things they broke
+
+Got a real `GEMINI_API_KEY`. First instinct was to just flip the
+switch and run `eval/ablation.py --live`. It surfaced three genuine
+issues in order, each fixed as it appeared rather than worked around.
+
+**1. Model choice, checked against the live API, not guessed.**
+Asked to prefer a newer model than 2.5. Rather than guess a plausible-
+sounding name, called `client.models.list()` against the real key -
+`gemini-3.5-flash` through `gemini-3.8-flash` all genuinely exist.
+Smoke-tested two candidates with the actual `response_schema` call this
+project uses: `gemini-3.6-flash` returned a correct structured result;
+`gemini-3.8-flash` returned a 503 ("currently experiencing high
+demand" - expected for a just-released model at capacity). Picked
+`gemini-3.6-flash`.
+
+**2. Without a reference list, the model correctly declines to guess a
+specific unlisted name - which is honest, but breaks the ablation.**
+First real run of `parse_narration` against the garbled ablation
+narration ("BLUPEAK CNSLTNG") came back as "Blupeak Cnsltng" - title-
+cased, not expanded to "BluePeak Consulting". That's the right call
+for a model given zero context about who the payer might be; the
+mocked test had assumed the model would somehow guess the exact
+intended expansion out of thin air, which was never a fair test.
+`core.match`'s tier-2 tie-break does exact token-set overlap
+(`_name_tokens("Blupeak Cnsltng")` shares nothing with
+`_name_tokens("BluePeak Consulting")` - the letters themselves differ),
+so this silently failed to resolve the tie even with a "working" LLM
+call.
+
+The fix is the same one a human does: check the narration against your
+own client list. `parse_narration`/`parse_narration_verified` now take
+an optional `known_counterparties` list, and the prompt asks the model
+to return a listed name verbatim if the narration plausibly matches
+one (even through an abbreviation or typo), and only falls back to its
+own literal reading otherwise - with an explicit instruction not to
+force a match on unrelated narrations. `eval/ablation.py` passes
+`[c.name for c in batch.clients]`. Verified live, three cases: the
+garbled "BluePeak" narration correctly resolved to the exact roster
+string; the garbled "Fernhill" narration too; and a deliberately
+unrelated narration ("RANDOMPERSON") was correctly NOT forced onto any
+roster entry, coming back as a plain cleaned-up "Random Person"
+instead - proving the fix adds a real capability without weakening the
+"don't invent things" instruction.
+
+**3. `gemini-3.6-flash`'s free tier caps at 20 `generate_content` calls
+per day, per model - not a short rate limit, a hard daily wall.**
+Running the ablation's original design (call the live parser on every
+credit in the batch, ~70+ of them) hit a 429 immediately. The retry
+logic added for (expected, from finding #1) transient 503s does not
+help here - exponential backoff cannot make a daily quota reset
+sooner. Two real fixes, not one workaround:
+
+- `llm/client.py::call_with_retry` now distinguishes the two failure
+  modes properly: a 503 gets retried with backoff on the *same* model
+  (a genuine "try again in a moment" case); a 429 immediately falls
+  back to the next model in `FALLBACK_MODELS` instead (Google scopes
+  the free quota per-model-per-project, so a different model has its
+  own untouched bucket - retrying the same exhausted model would just
+  burn time to fail the same way again). The fallback list itself was
+  built by testing candidates against the live key rather than
+  guessing: the entire `gemini-2.5-*` line returned 404 "no longer
+  available to new users" for this specific key/project, which a
+  guess would never have caught - `gemini-3.5-flash-lite`,
+  `gemini-3.1-flash-lite`, and `gemini-flash-latest` all confirmed
+  working.
+- `eval/ablation.py::_build_hint_live` no longer calls the LLM on
+  every credit in the batch regardless of whether it needs it. It now
+  runs a no-hint baseline pass first, collects the credit IDs still
+  sitting in `UNMATCHED_CREDIT` (10 out of 73 on the golden batch, the
+  two ablation-relevant credits among them), and only escalates those
+  to the live parser. This is not a workaround for the quota - it is
+  the correct design regardless of quota: there is no reason to spend
+  an API call re-examining a narration whose invoice a cheap
+  deterministic stage already matched correctly. The "right tool in
+  the right place" principle this project already applies to its own
+  tie-break tiers, now applied to when the tool gets called at all.
+
+**The actual live proof, once all three landed:**
+
+```
+=== OFF: no narration hint at all ===
+  INV-TIE-C -> None   INV-TIE-D -> None   (declined, not guessed)
+
+=== ON: real Gemini narration parser ===
+  (fell back to gemini-3.5-flash-lite once gemini-3.6-flash's daily quota was hit)
+  live parser called for 10/73 credits - only those left unresolved
+  discard rate: 0.0% over 10 credits
+  auto-match rate: 75.76% -> 78.79%
+  INV-TIE-C -> CR-TIE-C   INV-TIE-D -> CR-TIE-D   resolved correctly? True
+```
+
+Also ran job 3 (`build_narrative`) live against the `INV-GHOST-01`
+worked example: the model produced a correctly-worded chase message
+citing the exact injected Rs 2,000.00 figure, with no invented numbers
+and a professional, first-person tone - matching the design intent in
+`llm/narrative.py`'s own docstring on the first real attempt.
+
+Net effect: both LLM jobs are now proven against the real API, not
+just mocks. Zero regressions - all 48 tests still pass, the
+deterministic golden-batch numbers (auto-match 75.76%, Rs 36,575.82 at
+risk) are completely unaffected, since none of this touched `core/`.

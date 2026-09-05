@@ -106,6 +106,17 @@ here), and
 / `test_narration_hint_resolves_a_tie_the_substring_check_cannot` for
 the pinned-down proof.
 
+**This is verified live, not just mocked** (`python eval/ablation.py
+--live`, run 2026-09-05 against the real Gemini API): auto-match rate
+went from 75.76% to 78.79%, both `INV-TIE-C`/`INV-TIE-D` resolved to
+the correct credit, and 0.0% of the (real, live-parsed) narrations were
+discarded by the hallucination guard. The live run only calls the LLM
+on the 10 credits (of 73) the deterministic tiers left unresolved —
+see `DECISIONS.md` Entry 11 for why that's the *correct* design, not a
+quota workaround. Job 3 (`llm.narrative.build_narrative`) was verified
+live too, producing a correctly-worded chase message citing the exact
+injected rupee figure with nothing invented.
+
 ## Architecture
 
 ```
