@@ -1,279 +1,194 @@
-# Ghost Rupees
+<a id="readme-top"></a>
 
-Every rupee you invoiced — received, deducted, or still owed.
+<!-- PROJECT TITLE -->
+<h1 align="center">👻 Ghost Rupees - AI-Powered Payment Reconciliation Engine 💸</h1>
 
-Razorpay AI Buildathon 2026 · Track 4, AI Finance Controller
+<p align="center">
+  <strong>Ghost Rupees finds every rupee you invoiced (received, lawfully deducted, silently vanished, or still owed) and proves it in integer paisa, not a guess.</strong>
+</p>
+
+<p align="center">
+  AI Finance Controller
+</p>
+
+<br>
+
+<img width="1600" height="500" alt="ghost_rupees_readme_banner" src="REPLACE_WITH_YOUR_UPLOADED_BANNER_URL" />
+
+## 📌 Table of Contents
+<details>
+  <summary>Click to Expand</summary>
+  <ol>
+    <li><a href="#overview">🌟 Overview</a></li>
+    <li><a href="#the-number">📊 The Number</a></li>
+    <li><a href="#features">✨ Key Features</a></li>
+    <li><a href="#tech-stack">🛠️ Tech Stack</a></li>
+    <li><a href="#project-architecture">🏗️ Project Architecture</a></li>
+    <li><a href="#installation">⚡ Installation & Quick Start</a></li>
+    <li><a href="#ai-boundary">🧠 Where AI Is (and Isn't) Trusted</a></li>
+    <li><a href="#limitations">🔍 Limitations (Honest, Not Hidden)</a></li>
+    <li><a href="#future-scope">🔮 Future Scope</a></li>
+  </ol>
+</details>
 
 ---
 
-## The number
+<a id="overview"></a>
+## 🌟 Overview
 
-On a 66-invoice synthetic batch, Ghost Rupees auto-matched **75.76%** of
-invoices to a bank/gateway credit with zero manual intervention, and
-accounted for **100.00%** of the money by construction — every rupee
-invoiced lands in one of exactly four buckets (received, lawfully
-deducted and creditable, deducted but **absent from Form 26AS**, or
-short), and those four are asserted to sum to the invoiced total in
-integer paisa on every run. Along the way it found **Rs 36,575.82**
-sitting in TDS deductions that were never deposited with the
-government, rate mismatches that were never corrected, and short
-payments with no lawful basis — money a freelancer or small business
-would otherwise simply never notice was missing. Separately, on a
-14-defect held-out eval batch with known ground truth
-(`python eval/defects.py`), it correctly classified **13 of 14**
-planted defects, with the 14th an honestly documented known gap (FX
-spread handling isn't built yet) rather than a silent miss.
+**Ghost Rupees** is an **AI-assisted financial reconciliation engine** built for freelancers and small businesses who invoice clients and then watch money arrive **short, late, or silently deducted** with no explanation attached.
 
-The auto-match rate is deliberately not the highest number this engine
-could report — it declines to guess rather than silently resolving an
-ambiguous tie by chance (see `DECISIONS.md` Entry 7). A lower number
-that can be trusted beats a higher one that occasionally can't.
+It joins **three sources that nothing today joins**: the invoice you raised, the bank/gateway credit you actually received, and the TDS your client claims to have deducted in **Form 26AS**. Every invoice is decomposed into exactly four buckets (received, lawfully deducted and creditable, deducted but **never deposited with the government**, or short), and those four buckets are mathematically asserted to sum to the invoiced total, in integer paisa, on every single run.
 
-## 60-second run
+💡 **Problem Ghost Rupees Solves**
+A client deducts tax from your invoice and never actually pays it to the government. Nobody tells you. It just vanishes, like a ghost. Ghost Rupees treats reconciliation as a conservation law, not a spreadsheet guess: **every rupee has to end up somewhere, proven or named.**
 
-```
-git clone <this repo>
-cd ghost-rupees
-python cli.py run
-```
+---
 
-No API key needed, no `pip install` needed — the deterministic engine
-is pure standard library. That one command loads the committed golden
-batch (`data/fixtures/golden/`), runs the matcher, prints a summary,
-asserts the conservation law (the run fails loudly if it doesn't
-balance), and writes a self-contained HTML report to
-`report/out/report.html` — open it directly if you'd rather not run
-anything at all; it's committed at that path already.
+<a id="the-number"></a>
+## 📊 The Number
 
-```
-python cli.py generate      # regenerate the synthetic batch from scratch (seeded, deterministic)
-python -m pytest -q         # 47 tests, ~0.5s, no network
-python eval/ablation.py     # the narration-parser ablation (stub only by default; --live needs GEMINI_API_KEY)
-python eval/defects.py      # the 14-planted-defect held-out eval, with known ground truth
-```
+On a 66-invoice synthetic batch, Ghost Rupees auto-matched **75.76%** of invoices to a bank/gateway credit with **zero manual intervention**, and accounted for **100.00% of the money by construction**. Along the way it surfaced **Rs 36,575.82** sitting in TDS deductions that were never deposited with the government, uncorrected rate mismatches, and short payments with no lawful basis: money that would otherwise simply go unnoticed.
 
-## What it does
+On a separate 14-defect held-out evaluation batch with known ground truth, it correctly classified **13 of 14** planted defects. The 14th is an **honestly documented gap** (FX-spread handling isn't built yet), not a silent miss.
 
-A freelancer/small business invoices clients. Money arrives net of
-deductions nobody explains. Ghost Rupees reconciles three sources that
-nothing today joins: invoices raised, credits actually received
-(UPI/NEFT/IMPS/RTGS/Razorpay), and TDS actually reported in Form 26AS.
-Every invoice's gross amount is decomposed into exactly four buckets —
-**RECEIVED**, **DEDUCTED_CREDITABLE**, **DEDUCTED_UNCREDITABLE**,
-**SHORT** — asserted to sum to the invoiced total in integer paisa. The
-headline bucket, `DEDUCTED_UNCREDITABLE`, is money that was deducted
-from you and never deposited with the government — permanently gone
-unless you notice and chase it. Nothing else in this space computes
-that number.
-
-## Results (golden batch, seed=42, n=60 random + 6 designed scenarios)
+The auto-match rate is deliberately not the highest number this engine could report. It declines to guess rather than silently resolving an ambiguous tie by chance. A lower number that can be trusted beats a higher one that occasionally can't.
 
 | Metric | Value |
 |---|---|
 | Invoices / credits / clients | 66 / 73 / 10 |
-| Form 26AS entries | 13 |
 | Auto-match rate | 75.76% |
-| Rupees accounted for | 100.00% (by construction — see `core/ledger.py`) |
-| Rupees at risk (TDS not in 26AS + rate mismatches + short-paid) | Rs 36,575.82 |
-| 14-defect held-out eval | 13/14 correctly classified, 0 false positives, 1 documented known gap |
+| Rupees accounted for | 100.00% (by construction) |
+| Rupees at risk (undeposited TDS + rate mismatches + short-pays) | Rs 36,575.82 |
+| 14-defect held-out eval | 13/14 correct, 0 false positives, 1 documented gap |
+| Identity-carrying credits A/B | 50.00% → 100.00% auto-match |
 
-Invoice exceptions by code: `UNMATCHED_INVOICE` ×10 · `TDS_NOT_IN_26AS`
-×8 · `SHORT_PAID` ×6 · `TDS_RATE_MISMATCH` ×3 · `GST_OMITTED` ×3 ·
-`TDS_BELOW_THRESHOLD` ×1 · `SPLIT_PAYMENT` ×1.
-Credit exceptions: `UNMATCHED_CREDIT` ×10 · `DUPLICATE_CREDIT` ×6.
+---
 
-**The ablation** (`python eval/ablation.py`): two different clients
-(BluePeak Consulting, Fernhill Media) deliberately invoice the
-identical amount, paid via generic UPI credits with no Razorpay
-identifiers and no UTR either invoice references, with the counterparty
-name abbreviated in the narration the way real bank feeds often
-truncate it ("BLUPEAK CNSLTNG" for "BluePeak Consulting" — see
-`INV-TIE-C`/`INV-TIE-D`). Amount+date matching alone cannot tell the
-two credits apart, and the abbreviation defeats a plain substring
-check too. **Without narration understanding, the matcher correctly
-declines to guess** rather than silently swapping the two payments —
-both invoices come back honestly unresolved. Given the parsed
-counterparty name from job 1 (`llm.narration`), the tie resolves
-correctly for both. The interesting part isn't "the deterministic
-engine gets it wrong without AI" — it's safe by default — it's that
-**the LLM converts an honest "I don't know" into a correct "I know,"**
-improving coverage without ever risking a silent wrong match. See
-`DECISIONS.md` Entry 7 for the full story (including an earlier,
-cleaner-named version of this scenario that a later deterministic fix
-accidentally solved for free, which is why it isn't the one shown
-here), and
-`tests/test_engine.py::test_garbled_name_tie_is_declined_not_guessed_without_llm_help`
-/ `test_narration_hint_resolves_a_tie_the_substring_check_cannot` for
-the pinned-down proof.
+<a id="features"></a>
+## ✨ Key Features
 
-**This is verified live, not just mocked** (`python eval/ablation.py
---live`, run 2026-09-05 against the real Gemini API): auto-match rate
-went from 75.76% to 78.79%, both `INV-TIE-C`/`INV-TIE-D` resolved to
-the correct credit, and 0.0% of the (real, live-parsed) narrations were
-discarded by the hallucination guard. The live run only calls the LLM
-on the 10 credits (of 73) the deterministic tiers left unresolved —
-see `DECISIONS.md` Entry 11 for why that's the *correct* design, not a
-quota workaround. Job 3 (`llm.narrative.build_narrative`) was verified
-live too, producing a correctly-worded chase message citing the exact
-injected rupee figure with nothing invented.
+- 🤖 **AI-Assisted Narration Parsing** - turns messy bank/UPI narration text into structured counterparty data no regex reliably handles, used only to break ties, never to move money.
+- 🧾 **Conservation-Law Reconciliation** - every invoice's gross amount is decomposed into 4 buckets asserted to sum exactly to the invoiced total, in integer paisa, or the run fails loudly.
+- 🕵️ **Ghost Money Detection** - automatically finds TDS that was deducted from you but never deposited with the government (`DEDUCTED_UNCREDITABLE`), a number nothing else in this space computes.
+- 📐 **Hypothesis-Based Matching** - enumerates every lawful/common-error deduction hypothesis (TDS, GST, platform commission, gateway fees) and matches on predicted net, not raw gross.
+- 🔗 **Identity-Carrying Credit Resolution** - a dedicated per-client credit identifier removes amount/date guesswork entirely, measured at a real +50 percentage point auto-match improvement.
+- 📜 **FY-Versioned, Cited Tax Rules** - TDS/GST rate tables versioned by financial year, including the 194-series → Income Tax Act 2025 Section 393 citation change.
+- 🛡️ **AI on a Leash** - `core/` can never import `llm/` (enforced by an AST-walking test, not a convention); every LLM output is verified against raw source text before anything downstream trusts it.
 
-## Why Razorpay is essential, not decorative
+---
 
-`python eval/smart_collect_ab.py` generates the identical set of
-invoices twice — once as bank-statement-style credits with no payer
-name in the narration at all (realistic: a NEFT/RTGS line or a CSV
-export commonly carries no free-text name), once as if collected
-through a Razorpay Smart Collect identifier, so every credit already
-names its own client via `Credit.razorpay_customer_identifier`:
+<a id="tech-stack"></a>
+## 🛠️ Tech Stack
 
-```
-Run A - anonymous UPI credits (40 invoices, 8 clients):
-  auto-match rate: 50.00%
+| Layer | Technology Used |
+| ----------------- | ---------------- |
+| **Core Engine** | Python (standard library only, zero dependencies on the deterministic path) |
+| **AI/LLM Layer** | LLM-based narration parsing, structured JSON output |
+| **Payments Data** | Payment gateway test-mode API (customers, invoices, payment links, orders) |
+| **Testing** | pytest (52 tests, ~0.5s, no network required) |
+| **Reporting** | Self-contained, dependency-free HTML report builder |
+| **Money Handling** | Integer paisa throughout, raw floats rejected outright (`core/money.py`) |
 
-Run B - Razorpay Smart Collect identifiers (40 invoices, 8 clients):
-  auto-match rate: 100.00%
-  resolved via certain stage-1 identity: 40/40
+---
 
-delta: +50.00 percentage points
+<a id="project-architecture"></a>
+## 🏗️ Project Architecture
+
+```mermaid
+graph TD;
+    A[Invoices Raised] --> C[core: Deterministic Matcher];
+    B[Bank / Gateway Credits] --> C;
+    Z[Form 26AS Entries] --> C;
+    C --> D[core.compose: Hypothesis Solver];
+    D --> E[core.match: Identity - UTR - Hypothesis Tie-Break - Short/Split];
+    E --> F[core.ledger: 4-Bucket Conservation Law];
+    F --> G[core.classify: 15-Code Exception Taxonomy];
+    C -.optional, verified.-> H[llm: Narration Parsing + Narrative];
+    H -.gated by.-> I[llm.verify: Hallucination Guard];
+    F --> J[report: Self-Contained HTML Report];
 ```
 
-Same invoices, same amounts, same dates, same clients — the only
-difference is whether the collection method itself identifies the
-payer. That is the entire argument for Razorpay in one measured
-number, not a claim: when identity comes from the infrastructure
-instead of being inferred from amount and date, the exact class of bug
-this project spent real time fixing (`DECISIONS.md` Entries 4 and 7 —
-two different clients' payments getting silently swapped) cannot occur
-at all, because the ambiguity it depends on never exists in the first
-place. `tests/test_smart_collect_ab.py` pins this down: both runs
-conserve, Smart Collect is never worse, every Run B match is a
-certainty rather than a guess, and the test data's own collision rate
-is checked so this can't quietly stop testing anything.
+`core/` never imports `llm/`. An AI model never touches the money, it only reads messy bank text, and even then every claimed fact is checked against the raw source before anything downstream trusts it.
 
-Alongside this, `data/fetch_razorpay_fixtures.py` made 15 real
-Razorpay test-mode API calls (customers, invoices, payment links,
-orders) — 12 succeeded outright, and the raw responses are committed
-at `data/fixtures/razorpay_raw/`. The other 3 are honestly documented,
-not hidden: UPI Payment Links are a genuine Razorpay test-mode
-limitation, and Smart Collect itself isn't enabled as a product on
-this test account (a dashboard toggle, not a code problem) — so the
-identifier strings in the A/B above are modelled on Razorpay's
-documented schema rather than a live response. See `DECISIONS.md`
-Entry 12 for the exact, itemised breakdown of what's real and what's
-modelled.
+---
 
-## Architecture
+<a id="installation"></a>
+## ⚡ Installation & Quick Start
 
-```
-ghost-rupees/
-├── core/          deterministic engine - NEVER imports llm/ (enforced by
-│                  tests/test_import_boundary.py, an AST walk, not a convention)
-│   ├── money.py       integer paisa everywhere, floats rejected outright
-│   ├── models.py      Invoice, Credit, Deduction-bearing types, Form26ASEntry, Client
-│   ├── rules/         FY-versioned TDS/GST rate tables, cited, cumulative-threshold aware
-│   ├── compose.py     the hypothesis solver - predicts net under each lawful/common-error deduction
-│   ├── match.py       the matcher: identity, UTR, hypothesis (3-tier tie-break), split/merge, short-pay, classify
-│   ├── classify.py    15-code typed exception taxonomy
-│   ├── proof.py       an audit record on every matched decision
-│   └── ledger.py      the conservation law: 4 buckets, asserted to sum to gross, always
-├── llm/           optional - narration parsing, cross-client tie-break input, exception prose.
-│                  Every narration result passes llm.verify.gate_narration before being trusted.
-├── data/          seeded synthetic generator, the committed golden batch, and the 14-defect holdout (data/holdout.py)
-├── eval/          eval/ablation.py (narration-parser on/off) + eval/defects.py (the 14-defect held-out eval)
-├── report/        self-contained HTML report builder
-└── cli.py         the one-command entry point (stdlib argparse, zero deps for the core path)
+Follow these steps to run **Ghost Rupees** locally. The core reconciliation engine needs nothing but Python; the AI layer is optional and additive.
+
+### **1. Prerequisites**
+
+- [Python](https://www.python.org/) >= 3.10
+- (Optional, for live fixtures) a payment gateway's test-mode API keys
+
+### **2. Clone & Run the Core Engine**
+
+```bash
+git clone https://github.com/sanaysarthak/ghost-rupees.git
+cd ghost-rupees
+python cli.py run
 ```
 
-**The trust boundary, in one sentence:** a model that's 99% right about
-money is a 1% embezzlement rate, so the model never touches the money —
-it only reads the messy English on a bank narration, and even then
-every claimed fact is checked against the raw source text before
-anything downstream trusts it.
+No API key needed, no `pip install` needed. The deterministic engine is pure standard library. This loads the committed golden batch, runs the matcher, prints a summary, asserts the conservation law, and writes a self-contained report to `report/out/report.html`.
 
-## Where AI is deliberately NOT used
+### **3. Run the Test Suite**
 
-- All arithmetic — integer paisa throughout (`core/money.py` refuses a
-  raw `float` outright)
-- All TDS/GST rate and threshold application — from versioned,
-  cited tables (`core/rules/registry.py`), including the cumulative
-  per-FY threshold logic
-- The matched/unmatched verdict itself, and which of the four buckets
-  an amount falls into
+```bash
+python -m pytest -q
+```
+- ✅ 52 tests, ~0.5 seconds, zero network calls.
+
+### **4. Fetch Real Payment Gateway Fixtures (Optional)**
+
+```bash
+export RAZORPAY_KEY_ID="rzp_test_..."
+export RAZORPAY_KEY_SECRET="..."
+python data/fetch_razorpay_fixtures.py
+```
+- 🔒 Refuses to run against anything but a test-mode key, and scans every saved file for the literal secret string before writing it to disk.
+
+### **5. See the Identity-Resolution Argument, Measured**
+
+```bash
+python eval/smart_collect_ab.py
+```
+- 📈 Same invoices, same amounts, same dates. The only difference is whether the credit carries a dedicated per-client identifier. Measured result: **50.00% → 100.00%** auto-match.
+
+---
+
+<a id="ai-boundary"></a>
+## 🧠 Where AI Is (and Isn't) Trusted
+
+**The trust boundary, in one sentence:** a model that's 99% right about money is a 1% embezzlement rate, so the model never touches the money. It only reads the messy English on a bank narration, and even then every claimed fact is checked against the raw source text before anything downstream trusts it.
+
+**Never AI-decided:**
+- All arithmetic: integer paisa throughout, floats rejected outright
+- All TDS/GST rate and threshold application, from versioned, cited tables
+- The matched/unmatched verdict itself, and which bucket an amount falls into
 - The Form 26AS cross-check
-- Any decision above a rupee threshold — the model proposes a
-  disambiguation, it never commits one silently
+- Any decision above a rupee threshold: the model proposes, it never commits silently
 
-Where AI genuinely earns its place: turning free-text bank narration
-into structured fields no regex reliably handles, and using the
-counterparty name recovered from that text to break a same-amount,
-same-window tie the deterministic matcher's own free tier-1 substring
-check couldn't (see the ablation above). Note the escalation order in
-`core/match.py`'s tie-break: try a free deterministic check first, only
-reach for the model when that genuinely fails, and if neither resolves
-it, decline rather than guess — the "right tool in the right place"
-line applied literally, three tiers deep.
+**Where AI genuinely earns its place:** turning free-text bank narration into structured fields, and using the recovered counterparty name to break a same-amount, same-window tie the deterministic matcher's own free substring check couldn't. The escalation order is deliberate and three tiers deep: try a free deterministic check first, only reach for the model when that genuinely fails, and if neither resolves it, **decline rather than guess**.
 
-## The rule tables
+---
 
-See `plan/baaki.md` §7 for the full table, and its Verification log for
-the row-by-row detail. Re-verified 5 September 2026 against multiple
-independent sources per row (not just one), specifically checking exact
-numbers and effective dates rather than trusting a general topic match.
-Two real issues were found this way and fixed: the no-PAN override rate
-was wrong for 194-O specifically (was applying the generic 20% instead
-of a documented 5% carve-out - see `DECISIONS.md` Entry 9), and the
-194-O threshold's entity-type scope (individual/HUF only) was true but
-previously unstated. The Income Tax Act 2025 → Section 393 citation
-change - the boldest, most checkable-but-easy-to-fabricate claim in the
-table - was independently confirmed real across three sources. The
-official incometaxindia.gov.in FAQ pages block automated fetches
-(403), so this is strong secondary-source corroboration, not primary
-government-document confirmation - stated plainly, not overclaimed.
+<a id="limitations"></a>
+## 🔍 Limitations (Honest, Not Hidden)
 
-## Limitations (honest, not hidden)
+- `FX_SPREAD_UNEXPLAINED` (foreign-wire FX-spread shortfall) has no dedicated hypothesis yet. This is the 14-defect eval's one honest, documented miss.
+- The identity-carrying credit product used for the A/B isn't enabled on the test account this was verified against, so `eval/smart_collect_ab.py`'s identifier strings are modelled on its documented schema rather than a live response.
 
-- Threshold aggregation (Section 194J's Rs 50,000/FY cumulative
-  threshold) is computed by summing this project's own invoices for a
-  payee in the financial year — correct for this closed-world synthetic
-  batch, but in production the authoritative source would be the
-  payee's actual cumulative-TDS ledger, not a sum of invoices we
-  happen to know about.
-- Stage 2 (UTR lookup via Razorpay's Fetch-Payments-Using-UTR API)
-  takes an injectable resolver that is a documented no-op by default —
-  wiring it to live Razorpay credentials is a one-function change, left
-  for when real test-mode credentials are available.
-- Stage 4 set-matching (split/merged payments) is bounded to combinations
-  of up to 3 credits/invoices — a documented cap, not silently unlimited.
-- `FX_SPREAD_UNEXPLAINED` (a foreign-wire FX-spread shortfall) has no
-  dedicated hypothesis yet — the 14-defect eval's one honest miss (see
-  `eval/defects.py`'s output and `data/holdout.py`'s `known_gap` field).
-  `OVER_PAID` and `GATEWAY_FEE_VARIANCE` were in the same state until
-  Entry 8 — both now have real matcher support and are caught by the
-  eval.
-- Smart Collect isn't enabled as a product on the test account this was
-  verified against — `POST /v1/virtual_accounts` returns a 400 for "URL
-  not found," Razorpay's error for a merchant-level toggle, not a wrong
-  endpoint (confirmed against the docs' own verbatim example). That's a
-  dashboard action only the account owner can take, not something this
-  codebase can fix. `eval/smart_collect_ab.py`'s Smart Collect
-  identifier strings are therefore modelled on the documented schema,
-  not a live response — see `DECISIONS.md` Entry 12 for exactly what's
-  real (12 of 15 planned Razorpay fixtures, everything except this and
-  the also-platform-limited UPI Payment Links) and what's modelled.
+See `DECISIONS.md` for the full, kept-live engineering log.
 
-## What broke
+---
 
-See `DECISIONS.md` — kept live, not reconstructed after the fact.
-Highlights: the 194J threshold turned out to be cumulative-per-FY, not
-per-invoice (Entry 2); the synthetic generator's own round-number
-amounts were manufacturing fake collisions between unrelated clients
-(Entry 3); a genuine, conservation-law-invisible identity swap between
-two clients with identical invoice amounts (Entry 4); several
-exception codes (`SHORT_PAID`, `MERGED_PAYMENT`,
-`PLATFORM_COMMISSION_VARIANCE`, `OVER_PAID`, `GATEWAY_FEE_VARIANCE`)
-that were defined but never actually assigned by the matcher (Entries
-6-8); and building the 14-defect eval surfacing a chain of matching
-bugs that ultimately led to a real design principle — the matcher
-declines an ambiguous match rather than guessing, the same discipline
-already applied to the LLM layer, now applied to the deterministic
-core's own tie-breaks too (Entry 7).
+<a id="future-scope"></a>
+## 🔮 Future Scope
+
+- 🏦 **Live Bank Feed Integration** - direct ingestion from bank statement APIs instead of batch CSV/fixture uploads.
+- 🔗 **Live Identifier Rollout** - swap the modelled identifier schema for genuine live gateway responses once enabled on a production account.
+- 📊 **Interactive Dashboard** - move beyond the static HTML report to a live, filterable reconciliation dashboard.
+
+<p align="center"> 👻 Built by <a href="https://github.com/sanaysarthak">Sarthak Sanay</a> | © 2026 <b>Ghost Rupees</b> ⚡ </p>
