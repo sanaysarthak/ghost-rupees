@@ -49,7 +49,7 @@ def test_parse_narration_calls_the_expected_model_and_returns_dataclass():
     assert result.rail == "UPI"
 
     kwargs = fake.models.last_call_kwargs
-    assert kwargs["model"] == "gemini-2.5-flash"
+    assert kwargs["model"] == "gemini-3.6-flash"
     assert kwargs["contents"] == "UPI/CR/452118839021/ARJUNTEXTILES/HDFC/inv-ghost-01"
     assert kwargs["config"].response_mime_type == "application/json"
 
