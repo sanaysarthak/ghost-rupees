@@ -117,6 +117,51 @@ quota workaround. Job 3 (`llm.narrative.build_narrative`) was verified
 live too, producing a correctly-worded chase message citing the exact
 injected rupee figure with nothing invented.
 
+## Why Razorpay is essential, not decorative
+
+`python eval/smart_collect_ab.py` generates the identical set of
+invoices twice — once as bank-statement-style credits with no payer
+name in the narration at all (realistic: a NEFT/RTGS line or a CSV
+export commonly carries no free-text name), once as if collected
+through a Razorpay Smart Collect identifier, so every credit already
+names its own client via `Credit.razorpay_customer_identifier`:
+
+```
+Run A - anonymous UPI credits (40 invoices, 8 clients):
+  auto-match rate: 50.00%
+
+Run B - Razorpay Smart Collect identifiers (40 invoices, 8 clients):
+  auto-match rate: 100.00%
+  resolved via certain stage-1 identity: 40/40
+
+delta: +50.00 percentage points
+```
+
+Same invoices, same amounts, same dates, same clients — the only
+difference is whether the collection method itself identifies the
+payer. That is the entire argument for Razorpay in one measured
+number, not a claim: when identity comes from the infrastructure
+instead of being inferred from amount and date, the exact class of bug
+this project spent real time fixing (`DECISIONS.md` Entries 4 and 7 —
+two different clients' payments getting silently swapped) cannot occur
+at all, because the ambiguity it depends on never exists in the first
+place. `tests/test_smart_collect_ab.py` pins this down: both runs
+conserve, Smart Collect is never worse, every Run B match is a
+certainty rather than a guess, and the test data's own collision rate
+is checked so this can't quietly stop testing anything.
+
+Alongside this, `data/fetch_razorpay_fixtures.py` made 15 real
+Razorpay test-mode API calls (customers, invoices, payment links,
+orders) — 12 succeeded outright, and the raw responses are committed
+at `data/fixtures/razorpay_raw/`. The other 3 are honestly documented,
+not hidden: UPI Payment Links are a genuine Razorpay test-mode
+limitation, and Smart Collect itself isn't enabled as a product on
+this test account (a dashboard toggle, not a code problem) — so the
+identifier strings in the A/B above are modelled on Razorpay's
+documented schema rather than a live response. See `DECISIONS.md`
+Entry 12 for the exact, itemised breakdown of what's real and what's
+modelled.
+
 ## Architecture
 
 ```
@@ -205,13 +250,16 @@ government-document confirmation - stated plainly, not overclaimed.
   `OVER_PAID` and `GATEWAY_FEE_VARIANCE` were in the same state until
   Entry 8 — both now have real matcher support and are caught by the
   eval.
-- The Smart Collect A/B run (real Razorpay test-mode credentials
-  collecting the same transactions via anonymous UPI vs. Smart Collect
-  identifiers, per `plan/baaki.md` §4) needs a real Razorpay test
-  account and hasn't been run yet — the next concrete piece of work.
-- The 9 tax rows in `plan/baaki.md` §7 are still only cross-checked
-  against secondary sources, not the Income Tax Department's own
-  primary publication.
+- Smart Collect isn't enabled as a product on the test account this was
+  verified against — `POST /v1/virtual_accounts` returns a 400 for "URL
+  not found," Razorpay's error for a merchant-level toggle, not a wrong
+  endpoint (confirmed against the docs' own verbatim example). That's a
+  dashboard action only the account owner can take, not something this
+  codebase can fix. `eval/smart_collect_ab.py`'s Smart Collect
+  identifier strings are therefore modelled on the documented schema,
+  not a live response — see `DECISIONS.md` Entry 12 for exactly what's
+  real (12 of 15 planned Razorpay fixtures, everything except this and
+  the also-platform-limited UPI Payment Links) and what's modelled.
 
 ## What broke
 

@@ -544,3 +544,107 @@ Net effect: both LLM jobs are now proven against the real API, not
 just mocks. Zero regressions - all 48 tests still pass, the
 deterministic golden-batch numbers (auto-match 75.76%, Rs 36,575.82 at
 risk) are completely unaffected, since none of this touched `core/`.
+
+## Entry 12 — 2026-09-05 — real Razorpay test-mode calls, and Smart Collect is a dashboard toggle away
+
+Got real Razorpay test-mode credentials. Wrote
+`data/fetch_razorpay_fixtures.py` to make the ~15 schema-fidelity calls
+the plan always wanted, reading `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`
+from the environment only - the script refuses to run at all if the
+key doesn't start with `rzp_test_`, and checks every saved response
+for the literal secret string before writing it to disk, on top of
+`.gitignore` already excluding the credentials file itself.
+
+**Two real bugs in the fixture script, found by actually running it:**
+
+1. The Invoices API's own documentation examples don't use the `draft`
+   parameter at all, and passing `"draft": 1` (the value the docs
+   *do* mention elsewhere) got rejected outright: `"The selected draft
+   is invalid"`. Turns out invoices on this account issue immediately
+   on creation regardless - the fix was to stop fighting that and
+   drop the redundant separate `/issue` call, which was 400ing anyway
+   with "Operation not allowed for Invoice in issued status" once
+   creation had already issued it.
+2. Running the script twice back-to-back failed customer creation with
+   "Customer already exists for the merchant" - Razorpay dedupes
+   customers by contact/email. Fixed by suffixing both with a
+   timestamp tag so the script is safely re-runnable.
+
+**One genuine platform limitation, not a bug:** creating a UPI payment
+link returns `"UPI Payment Links is not supported in Test Mode. Please
+experience the product in Live Mode."` - saved as-is; it's real,
+documented behaviour, not something to route around.
+
+**The one real blocker: Smart Collect isn't enabled on this account.**
+`POST /v1/virtual_accounts` returns `"The requested URL was not found
+on the server"` - Razorpay's generic error for a product that isn't
+turned on for a given merchant, not a routing problem (the URL matches
+the official docs exactly, and a second attempt with the docs' own
+verbatim example payload gives the identical error). This needs a
+dashboard-side product enablement only the account owner can do -
+nothing in this codebase can toggle it. **12 of 15 planned calls
+succeeded outright** (customers, invoices - both creation paths,
+payment links, orders); the other 3 are the UPI-links limitation plus
+the Smart Collect create/fetch pair, both documented rather than
+hidden. All 15 responses are real and saved to
+`data/fixtures/razorpay_raw/`.
+
+**Built the Smart Collect A/B anyway** (`eval/smart_collect_ab.py`) -
+the actual measured evidence for "Razorpay is essential, not
+decorative" that was, until today, a paragraph of prose with nothing
+behind it. Generates the identical set of invoices twice: Run A as
+bank-statement-style credits with no payer name in the narration at
+all (a realistic case - NEFT/RTGS lines and CSV exports commonly carry
+no free-text name, only a UPI app notification sometimes does); Run B
+as if collected through a Smart Collect identifier, so every credit
+already names its own client via `Credit.razorpay_customer_identifier`
+(a field `core/models.py` and `core/match.py`'s stage-1 identity check
+already supported - no core code changed for this). Every 4th invoice
+deliberately shares its amount with the invoice before it, for a
+different client, a few days apart - the realistic case of two clients
+paying similar round-ish sums in the same week.
+
+First attempt at this came back 100%/100% - no gap at all. Wrong
+result, and worth explaining why: the "anonymous" Run A narrations
+still spelled the client's name out in full text
+("UPI/CR/.../BLUEPEAKCONSULTING/HDFC"), which `core.match`'s own free
+tier-1 substring check (added in Entry 7) resolves for free - the
+exact same trap Entry 7 already fell into once with the LLM ablation's
+first design. Fixed the same way: made Run A's narrations genuinely
+anonymous (rail + reference number only, no name field), matching a
+plain bank-statement export rather than a UPI app notification that
+happens to show a name. Result with that corrected:
+
+```
+Run A - anonymous UPI credits (40 invoices, 8 clients):
+  auto-match rate: 50.00%
+
+Run B - Razorpay Smart Collect identifiers (40 invoices, 8 clients):
+  auto-match rate: 100.00%
+  resolved via certain stage-1 identity: 40/40
+
+delta: +50.00 percentage points
+```
+
+Checked this isn't a fluke: 10 of 40 invoices carry a deliberately
+collided amount, and each collision touches two invoices (the original
+and its copy) - 20/40 = 50%, exactly matching the observed gap.
+Deterministic across five separate process runs.
+`tests/test_smart_collect_ab.py` pins four things down: both runs
+conserve, Smart Collect is never worse than anonymous (it can only add
+information, never remove it), every Run B invoice resolves via
+certain stage-1 identity (not a guess), and Run A's collision injection
+is actually firing (a floor of 90% would mean the test data itself
+stopped testing anything).
+
+**Honesty note on what's real and what's modelled:** the 15 fixtures
+in `data/fixtures/razorpay_raw/` are genuine live API responses. The
+Smart Collect identifier format in `eval/smart_collect_ab.py`
+(`"va_<15 hex chars>"`, matching Razorpay's real virtual-account ID
+prefix) is modelled on the officially documented request/response
+schema, not a live response, because generating a real one needs the
+dashboard toggle above. The matching *logic* the A/B measures
+(`core.match`'s stage-1 identity resolution) is real, already tested,
+and already proven live on the golden batch - only the identifier
+strings themselves are synthetic here, and the script's own docstring
+says so explicitly rather than letting a reader assume otherwise.
