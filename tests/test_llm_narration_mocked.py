@@ -1,9 +1,11 @@
 """
 Proves llm.narration is wired correctly - request shape, response
 parsing, and gate integration - without a live API key or network
-call. The Anthropic client is replaced with a stub whose
-messages.parse() returns a fixed, fake response, exactly the shape
-the SDK returns from client.messages.parse(..., output_format=Model).
+call. The Gemini client is replaced with a stub whose
+models.generate_content() returns a fixed, fake response, exactly the
+shape the SDK returns from client.models.generate_content(...,
+config=GenerateContentConfig(response_schema=Model)) - a `.parsed`
+attribute holding the validated Pydantic instance.
 """
 
 from dataclasses import dataclass
@@ -21,19 +23,19 @@ class _FakeParsedOutput:
     reference: str | None
 
 
-class _FakeMessages:
+class _FakeModels:
     def __init__(self, parsed_output):
         self._parsed_output = parsed_output
         self.last_call_kwargs = None
 
-    def parse(self, **kwargs):
+    def generate_content(self, **kwargs):
         self.last_call_kwargs = kwargs
-        return SimpleNamespace(parsed_output=self._parsed_output)
+        return SimpleNamespace(parsed=self._parsed_output)
 
 
 class _FakeClient:
     def __init__(self, parsed_output):
-        self.messages = _FakeMessages(parsed_output)
+        self.models = _FakeModels(parsed_output)
 
 
 def test_parse_narration_calls_the_expected_model_and_returns_dataclass():
@@ -46,11 +48,10 @@ def test_parse_narration_calls_the_expected_model_and_returns_dataclass():
     assert result.utr == "452118839021"
     assert result.rail == "UPI"
 
-    kwargs = fake.messages.last_call_kwargs
-    assert kwargs["model"] == "claude-opus-5"
-    assert kwargs["thinking"] == {"type": "adaptive"}
-    assert kwargs["output_config"] == {"effort": "low"}
-    assert kwargs["messages"][0]["content"] == "UPI/CR/452118839021/ARJUNTEXTILES/HDFC/inv-ghost-01"
+    kwargs = fake.models.last_call_kwargs
+    assert kwargs["model"] == "gemini-2.5-flash"
+    assert kwargs["contents"] == "UPI/CR/452118839021/ARJUNTEXTILES/HDFC/inv-ghost-01"
+    assert kwargs["config"].response_mime_type == "application/json"
 
 
 def test_parse_narration_verified_discards_a_hallucinated_utr():
