@@ -13,7 +13,7 @@ which would have made this "ablation" prove nothing about the LLM.
 INV-TIE-C/D abbreviates the name the way real bank narrations often
 do ("BLUPEAK CNSLTNG" for "BluePeak Consulting"), which defeats the
 substring check but is exactly the kind of thing a language model can
-still recognise. See DECISIONS.md Entry 7 and
+still recognise. See
 tests/test_engine.py::test_garbled_name_tie_is_wrong_without_llm_help.
 
 This is the orchestration layer - the one place allowed to import BOTH
@@ -61,7 +61,7 @@ def _build_hint_live(batch, baseline_ledger) -> dict[str, tuple[str | None, str 
     scanning all of them would exhaust the quota before reaching the two
     credits the ablation actually cares about) and the same "right tool
     in the right place" discipline the rest of this matcher already
-    applies to its own tie-break tiers. See DECISIONS.md Entry 11.
+    applies to its own tie-break tiers.
     """
     from llm.client import get_client
     from llm.narration import parse_narration_verified
@@ -81,7 +81,7 @@ def _build_hint_live(batch, baseline_ledger) -> dict[str, tuple[str | None, str 
     # like one of my clients?"). Without it, a model correctly declines to
     # guess a specific unlisted expansion of a garbled name; with it, it can
     # confidently resolve "BLUPEAK CNSLTNG" to the exact roster entry
-    # "BluePeak Consulting" - confirmed live, see DECISIONS.md Entry 11.
+    # "BluePeak Consulting" - confirmed live.
     roster = [c.name for c in batch.clients]
     for c in candidate_credits:
         parsed = parse_narration_verified(c.raw_narration, client=client, known_counterparties=roster, stats=stats)

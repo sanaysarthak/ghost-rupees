@@ -200,7 +200,7 @@ def _stage3_hypothesis(
             # an honest miss beats a silent wrong match. Found empirically
             # via the 12-defect holdout eval: without this, an unrelated
             # invoice's own exact-amount hypothesis was silently stealing
-            # another client's credit. See DECISIONS.md.
+            # another client's credit.
             any_readable_name = any(
                 re.search(r"[a-z]{4,}", next(c for c, _ in matches if c.credit_id == cid).raw_narration.lower())
                 for cid in distinct_credit_ids
@@ -319,7 +319,7 @@ def _stage4_split(invoice: Invoice, hyps: list[Hypothesis],
     an entire multi-client credit pool WILL eventually find a spurious
     combination that happens to sum correctly (confirmed empirically on
     the 12-defect holdout batch: it found a 3-credit "match" built from
-    three different clients' unrelated payments). See DECISIONS.md.
+    three different clients' unrelated payments).
     """
     compact_client = _compact(client_name) if client_name else ""
     candidates = [

@@ -36,7 +36,7 @@ def test_194o_no_pan_rate_is_5_percent_not_20_percent():
     s.206AA carries a specific proviso for 194-O (inserted by the Finance
     Act 2019, effective 1 Apr 2020) substituting 5% in place of the
     generic 20% no-PAN rate. Applying the generic rate here would
-    overstate a real freelancer's deduction by 4x. See DECISIONS.md.
+    overstate a real freelancer's deduction by 4x.
     """
     rs = resolve(date(2026, 6, 1))
     rule = rs.rule_for(DeductionKind.TDS_ECOMMERCE_194O, pan_on_file=False)

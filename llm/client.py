@@ -6,9 +6,9 @@ import cleanly, but anything that DOES call into llm/ should fail
 loudly and specifically, not silently or cryptically.
 
 Originally built against Anthropic's Claude API; switched to Google's
-Gemini API (google-genai SDK) - see DECISIONS.md Entry 10. The trust
-boundary and verification-gate design (llm/verify.py) are provider-
-agnostic and unchanged by this switch.
+Gemini API (google-genai SDK). The trust boundary and verification-gate
+design (llm/verify.py) are provider-agnostic and unchanged by this
+switch.
 """
 
 from __future__ import annotations
@@ -24,8 +24,7 @@ MODEL = "gemini-3.6-flash"
 # generate_content calls PER DAY PER MODEL (not a short-window rate
 # limit - the quota is exhausted for the rest of the day, backoff does
 # not help). (b) is the more important fact: Google scopes the free
-# quota per model, so a different model gets its own fresh bucket. See
-# DECISIONS.md Entry 11.
+# quota per model, so a different model gets its own fresh bucket.
 FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-latest"]
 # Note: the entire gemini-2.5-* line returned 404 "no longer available to
 # new users" for the API key this was verified against on 2026-09-05 -

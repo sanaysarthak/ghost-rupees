@@ -181,8 +181,6 @@ python eval/smart_collect_ab.py
 - `FX_SPREAD_UNEXPLAINED` (foreign-wire FX-spread shortfall) has no dedicated hypothesis yet. This is the 14-defect eval's one honest, documented miss.
 - The identity-carrying credit product used for the A/B isn't enabled on the test account this was verified against, so `eval/smart_collect_ab.py`'s identifier strings are modelled on its documented schema rather than a live response.
 
-See `DECISIONS.md` for the full, kept-live engineering log.
-
 ---
 
 <a id="future-scope"></a>

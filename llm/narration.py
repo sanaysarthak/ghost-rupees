@@ -26,7 +26,7 @@ roster to check against (that's what a human does too - "does this
 narration look like it's from someone on my client list?"), so
 `parse_narration` now accepts one and asks the model to match against
 it, falling back to a cleaned-up literal reading when nothing plausibly
-matches. See DECISIONS.md Entry 11.
+matches.
 """
 
 from __future__ import annotations

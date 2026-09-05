@@ -38,7 +38,7 @@ def test_smart_collect_resolves_every_invoice_via_certain_identity():
     """Every credit in Run B carries its own client's identifier, so
     stage 1 (identity) should resolve all of them - no amount/date
     guessing, no possibility of the cross-client collision class of
-    bug documented in DECISIONS.md Entries 4 and 7."""
+    bug this project spent real time fixing."""
     batch_b = build_run_b_smart_collect(seed=7, n=40)
     ledger_b = run_matcher(batch_b)
     ledger_b.assert_conserves(batch_b.invoices, gross_amount)

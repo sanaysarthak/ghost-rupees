@@ -101,7 +101,7 @@ def generate_batch(seed: int = 42, n_random: int = 60) -> Batch:
         # made unrelated clients collide on identical predicted nets constantly,
         # which starved the real invoice of its own credit and inflated the
         # UNMATCHED_INVOICE count for reasons that had nothing to do with
-        # matcher quality. See DECISIONS.md.
+        # matcher quality.
         amount_rupees = rng.randrange(6_500, 92_000, 137)
         gst_applicable = rng.random() < 0.6
         kind = rng.choice([
@@ -289,8 +289,7 @@ def generate_batch(seed: int = 42, n_random: int = 60) -> Batch:
     # that) - a first version of this file used exactly this clean-name
     # pair as the ablation, and it turned out to be a bad one: once the
     # cheap substring check was added, it solved this tie for free,
-    # silently invalidating the "needs an LLM" claim. See DECISIONS.md
-    # Entry 7.
+    # silently invalidating the "needs an LLM" claim.
     tie_a, tie_b = clients[2], clients[3]   # BluePeak Consulting, Fernhill Media
     tie_amount = rupees_to_paisa("28750.00")
     batch.invoices.append(Invoice(

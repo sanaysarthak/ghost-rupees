@@ -3,7 +3,7 @@ Makes real Razorpay TEST-MODE API calls and saves the raw JSON
 responses to data/fixtures/razorpay_raw/ - this is what
 data/generate.py's synthetic records are modelled on, so the batch is
 "synthetic in volume, genuine in structure" rather than a guessed
-schema. See plan/baaki.md §4 and DECISIONS.md.
+schema. See plan/baaki.md §4.
 
 Reads credentials from RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET
 environment variables ONLY - never hardcode a key/secret in this file

@@ -109,9 +109,9 @@ def test_garbled_name_tie_is_declined_not_guessed_without_llm_help():
     cannot resolve it. Both narrations DO carry other readable text, so
     the matcher can tell that neither tied candidate actually names this
     client - it declines to guess (an earlier version of this matcher
-    picked arbitrarily and got it silently wrong instead; see
-    DECISIONS.md Entry 7). Both invoices end up honestly unresolved
-    (UNMATCHED_INVOICE) rather than confidently wrong.
+    picked arbitrarily and got it silently wrong instead). Both invoices
+    end up honestly unresolved (UNMATCHED_INVOICE) rather than
+    confidently wrong.
     """
     batch = generate_batch(seed=42, n_random=60)
     ledger = run_matcher(batch)
@@ -158,7 +158,7 @@ def test_short_paid_is_recognised_not_swallowed_as_unmatched():
     as SHORT_PAID (RECEIVED = what arrived, SHORT = the shortfall), not
     silently lumped into UNMATCHED_INVOICE (which would put the ENTIRE
     gross into SHORT and lose the fact that most of the money did
-    arrive). This was a real gap - see DECISIONS.md.
+    arrive). This was a real gap that has since been fixed.
     """
     batch = generate_batch(seed=42, n_random=60)
     ledger = run_matcher(batch)

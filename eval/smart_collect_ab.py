@@ -11,17 +11,16 @@ as a measured number rather than a claim: when every credit already
 carries a razorpay_customer_identifier tying it to a specific client,
 core.match's stage 1 (identity) resolves it with certainty, with no
 amount/date guesswork and no chance of a cross-client collision at
-all - the exact class of bug this project spent real time fixing (see
-DECISIONS.md Entries 4 and 7) simply cannot occur in the Smart Collect
-run, because the ambiguity it exploits never exists in the first
-place.
+all - the exact class of bug this project spent real time fixing
+simply cannot occur in the Smart Collect run, because the ambiguity it
+exploits never exists in the first place.
 
 HONESTY NOTE: this test account does not have the Smart Collect
 product enabled (confirmed live 2026-09-05 - POST /v1/virtual_accounts
 returns "The requested URL was not found on the server", Razorpay's
 error for a product not turned on for this merchant, not a wrong
-endpoint - see data/fetch_razorpay_fixtures.py and DECISIONS.md Entry
-12). The Smart Collect identifier format used below
+endpoint - see data/fetch_razorpay_fixtures.py). The Smart Collect
+identifier format used below
 ("va_<15 hex chars>", matching the real "va_..." ID prefix Razorpay
 uses for virtual accounts) is modelled on the officially documented
 request/response schema (razorpay.com/docs/api/payments/smart-collect/
