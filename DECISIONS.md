@@ -402,3 +402,44 @@ meaningfully stronger evidence than the single-source cross-check this
 project shipped with originally, but it is still not the primary
 document itself. Said so plainly in plan/baaki.md rather than
 overstating the confidence level.
+
+## Entry 10 — 2026-09-05 — switched the LLM layer from Claude to Gemini
+
+No `ANTHROPIC_API_KEY` was available in the environment this project
+was built in, and a `GEMINI_API_KEY` was - so the LLM layer moved from
+Anthropic's Claude API to Google's Gemini API (`google-genai` SDK)
+rather than staying blocked on credentials nobody had. This only
+touches `llm/client.py`, `llm/narration.py`, and `llm/narrative.py` -
+`llm/verify.py` (the hallucination/binding/identity gate) never
+imported the SDK at all, by design (see its own docstring), so the
+safety mechanism this project actually depends on didn't move an inch.
+
+The mapping was mostly mechanical once the correct current SDK syntax
+was confirmed (`client.models.generate_content(model=..., contents=...,
+config=types.GenerateContentConfig(system_instruction=..., response_mime_type=
+"application/json", response_schema=PydanticModel))`, with the parsed
+result on `response.parsed` - the Gemini equivalent of Claude's
+`client.messages.parse(..., output_format=Model)` / `.parsed_output`).
+Two things did NOT carry over and were dropped rather than faked:
+Claude's `thinking`/`effort` controls have no direct Gemini equivalent
+in this code path, so the calls are now plain (no reasoning-effort
+tuning) - a reasonable trade for two structured-extraction tasks that
+were already using low/medium effort, not deep reasoning. Model choice
+is `gemini-2.5-flash` for both jobs, a single constant in
+`llm/client.py::MODEL`.
+
+`tests/test_llm_narration_mocked.py`'s fake client changed shape to
+match (`client.models.generate_content()` returning `.parsed`, not
+`client.messages.parse()` returning `.parsed_output`) - the fake client
+supplies the *response*, but `llm/narration.py` still constructs a
+real `google.genai.types.GenerateContentConfig` object internally, so
+these tests only pass if that import and construction actually work,
+not just if the mock is self-consistent. `requirements.txt` swapped
+`anthropic` for `google-genai`. All 48 tests pass unchanged in count -
+this was a like-for-like provider swap, not new functionality.
+
+**Not yet done:** no live Gemini call has actually been made - the
+mocked tests prove the wiring is correct, they don't prove the real
+API behaves exactly as documented. First real run (`eval/ablation.py
+--live` once `GEMINI_API_KEY` is set) is the actual proof and hasn't
+happened yet.
