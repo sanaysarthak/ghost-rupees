@@ -50,18 +50,45 @@ def _build_hint_stub(batch) -> dict[str, tuple[str | None, str | None]]:
     return hint
 
 
-def _build_hint_live(batch) -> dict[str, tuple[str | None, str | None]]:
+def _build_hint_live(batch, baseline_ledger) -> dict[str, tuple[str | None, str | None]]:
+    """
+    Only escalates to the live LLM for credits the deterministic tiers
+    could not already resolve (found via a no-hint baseline run) - there
+    is no reason to spend an API call parsing a narration whose invoice
+    is already correctly matched by amount/date/identity alone. This is
+    both a real cost saving (confirmed necessary live: gemini-3.6-flash's
+    free tier caps at 20 requests/day, and this batch has 70+ credits -
+    scanning all of them would exhaust the quota before reaching the two
+    credits the ablation actually cares about) and the same "right tool
+    in the right place" discipline the rest of this matcher already
+    applies to its own tie-break tiers. See DECISIONS.md Entry 11.
+    """
     from llm.client import get_client
     from llm.narration import parse_narration_verified
     from llm.verify import VerificationStats
 
+    unresolved_credit_ids = {
+        e.credit_id for e in baseline_ledger.credit_exceptions
+        if e.code.value == "UNMATCHED_CREDIT" and e.credit_id
+    }
+    candidate_credits = [c for c in batch.credits if c.credit_id in unresolved_credit_ids]
+
     client = get_client()   # raises LLMNotConfigured with a clear message if unset
     stats = VerificationStats()
     hint = {}
-    for c in batch.credits:
-        parsed = parse_narration_verified(c.raw_narration, client=client, stats=stats)
+    # A real reconciliation tool always has the user's own client roster to
+    # check a narration against - a human does this too ("does this look
+    # like one of my clients?"). Without it, a model correctly declines to
+    # guess a specific unlisted expansion of a garbled name; with it, it can
+    # confidently resolve "BLUPEAK CNSLTNG" to the exact roster entry
+    # "BluePeak Consulting" - confirmed live, see DECISIONS.md Entry 11.
+    roster = [c.name for c in batch.clients]
+    for c in candidate_credits:
+        parsed = parse_narration_verified(c.raw_narration, client=client, known_counterparties=roster, stats=stats)
         hint[c.credit_id] = (parsed.counterparty if parsed else None, parsed.utr if parsed else None)
-    print(f"  (live parser verification discard rate: {stats.discard_rate_pct}% over {stats.total} credits)")
+    print(f"  (live parser called for {len(candidate_credits)}/{len(batch.credits)} credits - "
+          f"only those the deterministic tiers left unresolved; "
+          f"discard rate {stats.discard_rate_pct}% over {stats.total})")
     return hint
 
 
@@ -96,7 +123,7 @@ def run_ablation(live: bool = False) -> None:
     if live:
         print("\n=== ON: real Gemini narration parser ===")
         try:
-            hint_live = _build_hint_live(batch)
+            hint_live = _build_hint_live(batch, ledger_off)
         except Exception as e:  # noqa: BLE001
             print(f"  could not run the live parser: {e}")
             return
