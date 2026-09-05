@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from core.classify import Exception_
 from core.money import paisa_to_rupees_str
-from llm.client import MODEL, get_client
+from llm.client import MODEL, call_with_retry, get_client
 
 _SYSTEM_PROMPT = """You write a short, plain-English explanation and a polite \
 follow-up chase message for a payment-reconciliation finding. You are given the \
@@ -49,7 +49,8 @@ def build_narrative(exc: Exception_, *, client=None) -> dict:
         "short polite chase message (3-5 sentences) ready to send to the client "
         "or deductor."
     )
-    response = client.models.generate_content(
+    response = call_with_retry(
+        client.models.generate_content,
         model=MODEL,
         contents=user_content,
         config=types.GenerateContentConfig(
