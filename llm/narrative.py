@@ -29,6 +29,7 @@ not given to you. Do NOT soften or omit the specific finding."""
 def build_narrative(exc: Exception_, *, client=None) -> dict:
     """Returns {"narrative": str, "chase_message": str}. Raises
     llm.client.LLMNotConfigured if no credentials are available."""
+    from google.genai import types
     from pydantic import BaseModel
 
     class _NarrativeSchema(BaseModel):
@@ -48,16 +49,16 @@ def build_narrative(exc: Exception_, *, client=None) -> dict:
         "short polite chase message (3-5 sentences) ready to send to the client "
         "or deductor."
     )
-    response = client.messages.parse(
+    response = client.models.generate_content(
         model=MODEL,
-        max_tokens=1024,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "medium"},
-        system=_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_content}],
-        output_format=_NarrativeSchema,
+        contents=user_content,
+        config=types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
+            response_mime_type="application/json",
+            response_schema=_NarrativeSchema,
+        ),
     )
-    p = response.parsed_output
+    p = response.parsed
     # re-inject the deterministic amount programmatically rather than trust
     # the model's own restatement of it inside free text
     narrative = p.narrative if amount_str in p.narrative else f"{p.narrative} (Rs {amount_str})"

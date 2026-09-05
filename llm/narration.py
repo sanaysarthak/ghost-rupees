@@ -49,8 +49,9 @@ def parse_narration_stub(raw: str) -> ParsedNarration:
 
 
 def parse_narration(raw: str, *, client=None) -> ParsedNarration:
-    """Single narration -> ParsedNarration via a live Claude call. Raises
+    """Single narration -> ParsedNarration via a live Gemini call. Raises
     llm.client.LLMNotConfigured if no credentials are available."""
+    from google.genai import types
     from pydantic import BaseModel
 
     class _NarrationSchema(BaseModel):
@@ -60,16 +61,16 @@ def parse_narration(raw: str, *, client=None) -> ParsedNarration:
         reference: str | None
 
     client = client or get_client()
-    response = client.messages.parse(
+    response = client.models.generate_content(
         model=MODEL,
-        max_tokens=1024,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "low"},
-        system=_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": raw}],
-        output_format=_NarrationSchema,
+        contents=raw,
+        config=types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
+            response_mime_type="application/json",
+            response_schema=_NarrationSchema,
+        ),
     )
-    p = response.parsed_output
+    p = response.parsed
     return ParsedNarration(counterparty=p.counterparty, utr=p.utr, rail=p.rail, reference=p.reference)
 
 
