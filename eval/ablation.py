@@ -1,6 +1,6 @@
 """
 The ablation study: run the matcher with the LLM narration parser OFF
-(the dumb digit-only stub) versus ON (a real Claude call per credit),
+(the dumb digit-only stub) versus ON (a real Gemini call per credit),
 and report the difference on the deliberately-planted GARBLED-name
 cross-client tie (INV-TIE-C / INV-TIE-D in data/generate.py).
 
@@ -23,7 +23,7 @@ together, exactly as plan/baaki.md's architecture intends.
 
 Usage:
     python eval/ablation.py            # stub only, no API key needed
-    python eval/ablation.py --live     # also runs the real Claude call
+    python eval/ablation.py --live     # also runs the real Gemini call
 """
 
 from __future__ import annotations
@@ -94,7 +94,7 @@ def run_ablation(live: bool = False) -> None:
           f"(the digit-only stub extracts no counterparty either, so this stays declined too)")
 
     if live:
-        print("\n=== ON: real Claude narration parser ===")
+        print("\n=== ON: real Gemini narration parser ===")
         try:
             hint_live = _build_hint_live(batch)
         except Exception as e:  # noqa: BLE001
@@ -108,7 +108,7 @@ def run_ablation(live: bool = False) -> None:
         print(f"  resolved correctly? {c_on == 'CR-TIE-C' and d_on == 'CR-TIE-D'}  "
               f"(this is what the real narration parser is expected to fix)")
     else:
-        print("\n(pass --live to also run the real Claude call - needs ANTHROPIC_API_KEY)")
+        print("\n(pass --live to also run the real Gemini call - needs GEMINI_API_KEY)")
 
 
 if __name__ == "__main__":

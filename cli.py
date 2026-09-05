@@ -9,7 +9,7 @@ Ghost Rupees CLI.
 Deliberately stdlib argparse, not Typer/Click - this must run on a
 reviewer's machine with zero pip installs beyond the standard library
 for the deterministic core. (The optional LLM layer under llm/ does
-need `anthropic` + `pydantic`, and `run --with-llm` will say so plainly
+need `google-genai` + `pydantic`, and `run --with-llm` will say so plainly
 if they're missing rather than failing with an import traceback.)
 """
 

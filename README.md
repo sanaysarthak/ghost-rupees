@@ -48,7 +48,7 @@ anything at all; it's committed at that path already.
 ```
 python cli.py generate      # regenerate the synthetic batch from scratch (seeded, deterministic)
 python -m pytest -q         # 47 tests, ~0.5s, no network
-python eval/ablation.py     # the narration-parser ablation (stub only by default; --live needs ANTHROPIC_API_KEY)
+python eval/ablation.py     # the narration-parser ablation (stub only by default; --live needs GEMINI_API_KEY)
 python eval/defects.py      # the 14-planted-defect held-out eval, with known ground truth
 ```
 

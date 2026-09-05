@@ -1,7 +1,7 @@
 """
 The verification gate every LLM output must survive before the
 deterministic engine will trust it. Pure Python, no API calls, no
-dependency on anthropic/pydantic - fully unit-testable offline, and
+dependency on the Gemini SDK/pydantic - fully unit-testable offline, and
 imported by core-adjacent code without pulling in the SDK.
 
 Three checks, in order:
@@ -31,7 +31,7 @@ from typing import Callable
 class ParsedNarration:
     """
     The internal, pure-Python representation of a parsed bank narration.
-    llm/narration.py is responsible for converting whatever the Anthropic
+    llm/narration.py is responsible for converting whatever the Gemini
     SDK's Pydantic output schema returns into one of these immediately
     after the API call, so this module stays free of any SDK/Pydantic
     dependency and is trivially unit-testable offline.
