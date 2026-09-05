@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
+rzp-test-key.csv
+*.key.csv
+.env.local
